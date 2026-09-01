@@ -408,7 +408,7 @@ Internet-Draft             SETTLE Requirements             February 2026
       left provisioning of the Discovery Key out of scope, which is
       exactly the gap an OOB Ceremony fills.  The draft expired without
       adoption, and Encrypted SNI has since been superseded by Encrypted
-      Client Hello.
+      Client Hello [RFC9849].
 
    *  *Security Parameters in Discovery Records:* Work on discovering
       encrypted DNS resolvers [I-D.liu-add-dnssd-edns] advertises
@@ -974,6 +974,10 @@ Internet-Draft             SETTLE Requirements             February 2026
               Resource Records)", RFC 9460, DOI 10.17487/RFC9460,
               November 2023, <https://www.rfc-editor.org/info/rfc9460>.
 
+   [RFC9849]  Rescorla, E., Oku, K., Sullivan, N., and C. A. Wood, "TLS
+              Encrypted Client Hello", RFC 9849, DOI 10.17487/RFC9849,
+              March 2026, <https://www.rfc-editor.org/info/rfc9849>.
+
    [IEEE.802.1AR]
               IEEE, "IEEE Standard for Local and Metropolitan Area
               Networks - Secure Device Identity", IEEE 802.1AR-2018,
@@ -998,10 +1002,6 @@ Internet-Draft             SETTLE Requirements             February 2026
    [I-D.wing-settle-referee]
               Wing, D., "A Referee to Authenticate Servers in Local
               Domains", Work in Progress, Internet-Draft, draft-wing-
-              settle-referee-00, January 2025,
-              <https://datatracker.ietf.org/doc/html/draft-wing-settle-
-              referee>.
-
 
 
 
@@ -1009,6 +1009,10 @@ Sweet & De Backker       Expires 25 August 2026                [Page 18]
 
 Internet-Draft             SETTLE Requirements             February 2026
 
+
+              settle-referee-00, January 2025,
+              <https://datatracker.ietf.org/doc/html/draft-wing-settle-
+              referee>.
 
    [I-D.wing-settle-public-key-hash]
               Wing, D., "Public Key Hash for Local Domains", Work in
@@ -1050,12 +1054,8 @@ Internet-Draft             SETTLE Requirements             February 2026
               <https://datatracker.ietf.org/doc/html/draft-ietf-uta-
               tls13-iot-profile>.
 
-   [I-D.housley-lamps-macaddress-on]
-              Housley, R., "MAC Address in X.509 Certificate otherName",
-              Work in Progress, Internet-Draft, draft-housley-lamps-
-              macaddress-on, 2026,
-              <https://datatracker.ietf.org/doc/html/draft-housley-
-              lamps-macaddress-on>.
+
+
 
 
 
@@ -1065,6 +1065,13 @@ Sweet & De Backker       Expires 25 August 2026                [Page 19]
 
 Internet-Draft             SETTLE Requirements             February 2026
 
+
+   [I-D.housley-lamps-macaddress-on]
+              Housley, R., "MAC Address in X.509 Certificate otherName",
+              Work in Progress, Internet-Draft, draft-housley-lamps-
+              macaddress-on, 2026,
+              <https://datatracker.ietf.org/doc/html/draft-housley-
+              lamps-macaddress-on>.
 
    [W3C.SecureContexts]
               West, M., "Secure Contexts", W3C Candidate Recommendation 
@@ -1106,13 +1113,6 @@ Internet-Draft             SETTLE Requirements             February 2026
               request 1094, September 2026,
               <https://github.com/pion/dtls/pull/1094>.
 
-   [ZookosTriangle]
-              Wilcox-O'Hearn, Z., "Names: Decentralized, Secure, Human-
-              Meaningful: Choose Two", 2001,
-              <https://en.wikipedia.org/wiki/Zooko%27s_triangle>.
-
-
-
 
 
 
@@ -1121,6 +1121,11 @@ Sweet & De Backker       Expires 25 August 2026                [Page 20]
 
 Internet-Draft             SETTLE Requirements             February 2026
 
+
+   [ZookosTriangle]
+              Wilcox-O'Hearn, Z., "Names: Decentralized, Secure, Human-
+              Meaningful: Choose Two", 2001,
+              <https://en.wikipedia.org/wiki/Zooko%27s_triangle>.
 
 Appendix A.  Change History
 
@@ -1166,17 +1171,16 @@ Appendix A.  Change History
    *  Hardened REQ-TRUST-02 (entropy floor set to "at least 128 bits"
       instead of "e.g.").
 
-   *  Upgraded REQ-TRUST-04 from SHOULD to MUST.
-
-   *  Refined REQ-TRANS-04 wording for neutrality.
-
-
 
 
 Sweet & De Backker       Expires 25 August 2026                [Page 21]
 
 Internet-Draft             SETTLE Requirements             February 2026
 
+
+   *  Upgraded REQ-TRUST-04 from SHOULD to MUST.
+
+   *  Refined REQ-TRANS-04 wording for neutrality.
 
    *  Split REQ-ARCH-04 into separate Authorization and Audit
       requirements.
@@ -1216,10 +1220,6 @@ Authors' Addresses
 
    Michiel De Backker (editor)
    Email: mail@backkem.me
-
-
-
-
 
 
 
