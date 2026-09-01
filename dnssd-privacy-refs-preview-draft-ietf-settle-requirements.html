@@ -1323,6 +1323,20 @@ li > p:last-of-type:only-child {
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
             <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-prior-art-and-related-work" class="internal xref">Prior Art and Related Work</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-ceremony-and-pairing" class="internal xref">Ceremony and Pairing</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-naming-and-discovery" class="internal xref">Naming and Discovery</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-local-certificate-issuance-" class="internal xref">Local Certificate Issuance and Enrollment</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="auto internal xref">5.4</a>.  <a href="#name-keys-certificates-and-brows" class="internal xref">Keys, Certificates, and Browser Mechanisms</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
             <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-operational-tracks" class="internal xref">Operational Tracks</a></p>
@@ -1411,7 +1425,7 @@ li > p:last-of-type:only-child {
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
 <p id="section-1-1">Local networks have historically used a mix of encrypted and unencrypted communications with no common method to establish trust. Access is provided to those who have the Wi-Fi password or an Ethernet cable, and the connected device simply trusts the information provided to it by the DHCP service on that network. In contrast, the Internet increasingly uses encrypted communications with a well-regulated system of Certificate Authorities, Domain Name Providers, Address Registries, and distributed Domain Name Services that form the basis of trust on the "modern web."<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">With the advent of HTTPS everywhere, browsers disadvantage web services using unencrypted communications by requiring a Secure Context for features such as Direct Sockets, Geolocation, Service Workers, Web Bluetooth, WebCrypto, WebTransport, and WebRTC. The concept of "Limited Domains" <span>[<a href="#RFC8799" class="cite xref">RFC8799</a>]</span> encapsulates these local, constrained environments, but existing web security models struggle to adapt to them. Furthermore, modern browser security models, such as Local Network Access (LNA), restrict public websites from making requests to private IP addresses without explicit secure contexts and user permissions.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-2">With the advent of HTTPS everywhere, browsers disadvantage web services using unencrypted communications by requiring a Secure Context for features such as Direct Sockets, Geolocation, Service Workers, Web Bluetooth, WebCrypto, WebTransport, and WebRTC. The concept of "Limited Domains" <span>[<a href="#RFC8799" class="cite xref">RFC8799</a>]</span> encapsulates these local, constrained environments, but existing web security models struggle to adapt to them. Furthermore, modern browser security models, such as Local Network Access (LNA) <span>[<a href="#WICG.LNA" class="cite xref">WICG.LNA</a>]</span>, restrict public websites from making requests to private IP addresses without explicit secure contexts and user permissions.<a href="#section-1-2" class="pilcrow">¶</a></p>
 <p id="section-1-3">Existing deployments of TLS on local networks typically use "self-signed" X.509 certificates that lack the endorsement of a trusted party, relying instead on Trust on First Use (TOFU) mechanisms. Because the client User Agent lacks a cryptographic trust anchor for the local device, it presents a "scary" certificate warning. Users frequently disregard these warnings, leading to warning fatigue and leaving them vulnerable to active interception. Conversely, network devices are unable to determine the trustworthiness of the local network, humorous solutions such as the "evil bit" from <span>[<a href="#RFC3514" class="cite xref">RFC3514</a>]</span> aside.<a href="#section-1-3" class="pilcrow">¶</a></p>
 <p id="section-1-4">This document defines common terminology and requirements for discovering, identifying, validating, and establishing secure connections with local network devices without relying on Trust On First Use (TOFU) or continuous Internet connectivity.<a href="#section-1-4" class="pilcrow">¶</a></p>
 </section>
@@ -1561,66 +1575,89 @@ li > p:last-of-type:only-child {
       <h2 id="name-prior-art-and-related-work">
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-prior-art-and-related-work" class="section-name selfRef">Prior Art and Related Work</a>
       </h2>
-<p id="section-5-1">The SETTLE architecture builds upon and differentiates itself from several existing approaches:<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-1">The SETTLE architecture builds upon and differentiates itself from several existing approaches, grouped here by the problem they address.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<section id="section-5.1">
+        <h3 id="name-ceremony-and-pairing">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-ceremony-and-pairing" class="section-name selfRef">Ceremony and Pairing</a>
+        </h3>
 <ul class="normal">
-<li class="normal" id="section-5-2.1">
-          <strong>Device Pairing Research:</strong> The pattern SETTLE depends on is decades old. "The Resurrecting Duckling" <span>[<a href="#Duckling" class="cite xref">Duckling</a>]</span> described secure transient association, where a device imprints on an owner and a reset returns it to an unowned state. "Talking to Strangers" <span>[<a href="#TalkingToStrangers" class="cite xref">TalkingToStrangers</a>]</span> introduced pre-authentication over a location-limited channel followed by key exchange over the network. "Seeing-is-Believing" <span>[<a href="#SeeingIsBelieving" class="cite xref">SeeingIsBelieving</a>]</span> made that channel a camera reading a printed barcode, which is the QR ceremony still in use.<a href="#section-5-2.1" class="pilcrow">¶</a>
+<li class="normal" id="section-5.1-1.1">
+            <strong>Device Pairing Research:</strong> The pattern SETTLE depends on is decades old. "The Resurrecting Duckling" <span>[<a href="#Duckling" class="cite xref">Duckling</a>]</span> described secure transient association, where a device imprints on an owner and a reset returns it to an unowned state. "Talking to Strangers" <span>[<a href="#TalkingToStrangers" class="cite xref">TalkingToStrangers</a>]</span> introduced pre-authentication over a location-limited channel followed by key exchange over the network. "Seeing-is-Believing" <span>[<a href="#SeeingIsBelieving" class="cite xref">SeeingIsBelieving</a>]</span> made that channel a camera reading a printed barcode, which is the QR ceremony still in use.<a href="#section-5.1-1.1" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.2">
-          <strong>BRSKI and BRSKI-PRM:</strong> Bootstrapping Remote Secure Key Infrastructure <span>[<a href="#RFC8995" class="cite xref">RFC8995</a>]</span> automates provisioning using manufacturer IDevIDs. BRSKI-PRM <span>[<a href="#I-D.ietf-anima-brski-prm" class="cite xref">I-D.ietf-anima-brski-prm</a>]</span> demonstrates the value of <em>object security</em> (signed Vouchers) over transport security for environments where pledges cannot initiate TLS connections. While powerful, BRSKI requires a supply chain root of trust, which is absent in self-hosted consumer scenarios.<a href="#section-5-2.2" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.1-1.2">
+            <strong>Wi-Fi Easy Connect (DPP):</strong> Uses QR codes containing public keys to bootstrap WPA3 credentials <span>[<a href="#DPP" class="cite xref">DPP</a>]</span>. This provides a strong precedent for OOB ceremonies, though it targets network-layer access rather than application-layer TLS identity.<a href="#section-5.1-1.2" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.3">
-          <strong>Matter Protocol:</strong> Matter utilizes Password-Authenticated Session Establishment (PASE) <span>[<a href="#Matter" class="cite xref">Matter</a>]</span> for onboarding, which is built on SPAKE2+ <span>[<a href="#RFC9383" class="cite xref">RFC9383</a>]</span> rather than SPAKE2. However, security analyses have highlighted flaws including low-entropy (27-bit) passcodes and static salts, emphasizing the need for higher entropy in OOB ceremonies.<a href="#section-5-2.3" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.1-1.3">
+            <strong>Matter Protocol:</strong> Matter onboards with Password-Authenticated Session Establishment (PASE) <span>[<a href="#Matter" class="cite xref">Matter</a>]</span>, built on SPAKE2+ <span>[<a href="#RFC9383" class="cite xref">RFC9383</a>]</span> and a 27-bit passcode. A PAKE tolerates a low-entropy passcode when an attacker is limited to online guesses. The flaws reported by security analyses lie in the handling, notably static salts, rather than in the passcode length itself.<a href="#section-5.1-1.3" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.4">
-          <strong>Wi-Fi Easy Connect (DPP):</strong> Uses QR codes containing public keys to bootstrap WPA3 credentials <span>[<a href="#DPP" class="cite xref">DPP</a>]</span>. This provides a strong precedent for OOB ceremonies, though it targets network-layer access rather than application-layer TLS identity.<a href="#section-5-2.4" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.1-1.4">
+            <strong>Open Screen Protocol:</strong> The W3C Open Screen Network Protocol <span>[<a href="#W3C.OpenScreen" class="cite xref">W3C.OpenScreen</a>]</span> provides a particularly clean construction for local device pairing without pre-shared keys. Devices establish a provisional QUIC/TLS connection using self-signed certificates, then authenticate it via SPAKE2 <span>[<a href="#RFC9382" class="cite xref">RFC9382</a>]</span> bound to a user-transferred PIN. This pattern of "connect first, authenticate via PAKE second" is directly applicable to SETTLE's Track A. Emerging IETF work on integrating PAKEs directly into TLS 1.3 <span>[<a href="#I-D.ietf-tls-pake" class="cite xref">I-D.ietf-tls-pake</a>]</span> may provide a standardized transport for this class of bootstrapping.<a href="#section-5.1-1.4" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.5">
-          <strong>Open Screen Protocol:</strong> The W3C Open Screen Network Protocol <span>[<a href="#W3C.OpenScreen" class="cite xref">W3C.OpenScreen</a>]</span> provides a particularly clean construction for local device pairing without pre-shared keys. Devices establish a provisional QUIC/TLS connection using self-signed certificates, then authenticate it via SPAKE2 <span>[<a href="#RFC9382" class="cite xref">RFC9382</a>]</span> bound to a user-transferred PIN. This pattern of "connect first, authenticate via PAKE second" is directly applicable to SETTLE's Track A. Emerging IETF work on integrating PAKEs directly into TLS 1.3 <span>[<a href="#I-D.ietf-tls-pake" class="cite xref">I-D.ietf-tls-pake</a>]</span> may provide a standardized transport for this class of bootstrapping.<a href="#section-5-2.5" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.1-1.5">
+            <strong>EAP-NOOB:</strong> <span>[<a href="#RFC9140" class="cite xref">RFC9140</a>]</span> bootstraps a device that has no credentials at all by running a key exchange in band and authenticating it with a user-assisted OOB message. That message carries two values: a secret nonce that authenticates the exchange, and a fingerprint that keeps impersonation detectable even if the nonce is overheard. It requires the OOB message to be generated per ceremony and rejects static printed codes, because a printed code can leak and be reused later.<a href="#section-5.1-1.5" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.6">
-          <strong>EAP-NOOB:</strong> <span>[<a href="#RFC9140" class="cite xref">RFC9140</a>]</span> bootstraps a device that has no credentials at all by running a key exchange in band and authenticating it with a user-assisted OOB message. That message carries two values: a secret nonce that authenticates the exchange, and a fingerprint that keeps impersonation detectable even if the nonce is overheard. It requires the OOB message to be generated per ceremony and rejects static printed codes, because a printed code can leak and be reused later.<a href="#section-5-2.6" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.1-1.6">
+            <strong>ZRTP Short Authentication Strings:</strong> <span>[<a href="#RFC6189" class="cite xref">RFC6189</a>]</span> commits to the Diffie-Hellman values before revealing them, then has two users compare a short string. Because the attacker must commit to one guess, 16 bits suffices, giving an attacker one chance in 65536 of going undetected. A short ceremony is not weak by itself; what matters is whether an attacker gets more than one attempt.<a href="#section-5.1-1.6" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.7">
-          <strong>ZRTP Short Authentication Strings:</strong> <span>[<a href="#RFC6189" class="cite xref">RFC6189</a>]</span> commits to the Diffie-Hellman values before revealing them, then has two users compare a short string. Because the attacker must commit to one guess, 16 bits suffices, giving an attacker one chance in 65536 of going undetected. A short ceremony is not weak by itself; what matters is whether an attacker gets more than one attempt.<a href="#section-5-2.7" class="pilcrow">¶</a>
+        </ul>
+</section>
+<section id="section-5.2">
+        <h3 id="name-naming-and-discovery">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-naming-and-discovery" class="section-name selfRef">Naming and Discovery</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-5.2-1.1">
+            <strong>AirDrop / PrivateDrop:</strong> Traditional local discovery using truncated hashes leaks user identifiers. Research into Private Set Intersection (PSI) <span>[<a href="#PrivateDrop" class="cite xref">PrivateDrop</a>]</span> demonstrates that privacy-preserving mutual discovery is feasible with sub-second latency.<a href="#section-5.2-1.1" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.8">
-          <strong>Raw Public Keys in TLS:</strong> <span>[<a href="#RFC7250" class="cite xref">RFC7250</a>]</span> lets a peer present a bare public key instead of a certificate chain. It states that authentication then rests entirely on binding that key to an identity out of band, and deliberately leaves how unspecified. That binding is what SETTLE has to supply.<a href="#section-5-2.8" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.2-1.2">
+            <strong>Private DNS-SD with Encrypted SNI:</strong> Earlier DNS-SD privacy work <span>[<a href="#I-D.huitema-dnssd-tls-privacy" class="cite xref">I-D.huitema-dnssd-tls-privacy</a>]</span> made discovery and the handshake one exchange. The client multicasts a ClientHello whose Encrypted SNI is keyed to a per-service Discovery Key that is never published in DNS, so only a service holding that key can answer. <span>[<a href="#RFC8882" class="cite xref">RFC8882</a>]</span> sets out requirements for this class of mechanism. The draft expired without adoption and left key provisioning out of scope, which is the gap an OOB Ceremony fills. Encrypted SNI is now superseded by Encrypted Client Hello <span>[<a href="#RFC9849" class="cite xref">RFC9849</a>]</span>.<a href="#section-5.2-1.2" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.9">
-          <strong>AirDrop / PrivateDrop:</strong> Traditional local discovery using truncated hashes leaks user identifiers. Research into Private Set Intersection (PSI) <span>[<a href="#PrivateDrop" class="cite xref">PrivateDrop</a>]</span> demonstrates that privacy-preserving mutual discovery is feasible with sub-second latency.<a href="#section-5-2.9" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.2-1.3">
+            <strong>Security Parameters in Discovery Records:</strong> Work on discovering encrypted DNS resolvers <span>[<a href="#I-D.liu-add-dnssd-edns" class="cite xref">I-D.liu-add-dnssd-edns</a>]</span> puts validation material in the discovery records themselves, either an Authentication Domain Name or a SHA-256 certificate fingerprint, carried in TXT keys or SVCB parameters <span>[<a href="#RFC9460" class="cite xref">RFC9460</a>]</span>. It allows that material to be transferred out of band, and it tells clients not to trust a discovered service automatically, which matches SETTLE's rejection of network TOFU.<a href="#section-5.2-1.3" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.10">
-          <strong>Private DNS-SD with Encrypted SNI:</strong> Earlier DNS-SD privacy work <span>[<a href="#I-D.huitema-dnssd-tls-privacy" class="cite xref">I-D.huitema-dnssd-tls-privacy</a>]</span> made discovery and the handshake one exchange. The client multicasts a ClientHello whose Encrypted SNI is keyed to a per-service Discovery Key that is never published in DNS, so only a service holding that key can answer. <span>[<a href="#RFC8882" class="cite xref">RFC8882</a>]</span> sets out requirements for this class of mechanism. The draft expired without adoption and left key provisioning out of scope, which is the gap an OOB Ceremony fills. Encrypted SNI is now superseded by Encrypted Client Hello <span>[<a href="#RFC9849" class="cite xref">RFC9849</a>]</span>.<a href="#section-5-2.10" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.2-1.4">
+            <strong>Service Registration Protocol:</strong> <span>[<a href="#RFC9665" class="cite xref">RFC9665</a>]</span> lets a device claim a local DNS-SD name first come, first served and defend it with a key pair it generates itself, with no CA involved. It is explicit that this proves only that later updates come from the original registrant. It solves naming, not authentication.<a href="#section-5.2-1.4" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.11">
-          <strong>Security Parameters in Discovery Records:</strong> Work on discovering encrypted DNS resolvers <span>[<a href="#I-D.liu-add-dnssd-edns" class="cite xref">I-D.liu-add-dnssd-edns</a>]</span> puts validation material in the discovery records themselves, either an Authentication Domain Name or a SHA-256 certificate fingerprint, carried in TXT keys or SVCB parameters <span>[<a href="#RFC9460" class="cite xref">RFC9460</a>]</span>. It allows that material to be transferred out of band, and it tells clients not to trust a discovered service automatically, which matches SETTLE's rejection of network TOFU.<a href="#section-5-2.11" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.2-1.5">
+            <strong>Discovery of Designated Resolvers:</strong> <span>[<a href="#RFC9462" class="cite xref">RFC9462</a>]</span> verifies a discovered resolver by requiring its address in an iPAddress SAN entry, the model REQ-TRANS-03 asks for. For private, unique local, and link-local addresses it instead defines an opportunistic mode that skips name validation, a standardized instance of the shortcut SETTLE rejects.<a href="#section-5.2-1.5" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.12">
-          <strong>Service Registration Protocol:</strong> <span>[<a href="#RFC9665" class="cite xref">RFC9665</a>]</span> lets a device claim a local DNS-SD name first come, first served and defend it with a key pair it generates itself, with no CA involved. It is explicit that this proves only that later updates come from the original registrant. It solves naming, not authentication.<a href="#section-5-2.12" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.2-1.6">
+            <strong>Local Public Key Hashes:</strong> Approaches that embed public key hashes into local domain names <span>[<a href="#I-D.wing-settle-public-key-hash" class="cite xref">I-D.wing-settle-public-key-hash</a>]</span> offer self-certifying namespaces but sacrifice human-readability.<a href="#section-5.2-1.6" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.13">
-          <strong>Discovery of Designated Resolvers:</strong> <span>[<a href="#RFC9462" class="cite xref">RFC9462</a>]</span> verifies a discovered resolver by requiring its address in an iPAddress SAN entry, the model REQ-TRANS-03 asks for. For private, unique local, and link-local addresses it instead defines an opportunistic mode that skips name validation, a standardized instance of the shortcut SETTLE rejects.<a href="#section-5-2.13" class="pilcrow">¶</a>
+        </ul>
+</section>
+<section id="section-5.3">
+        <h3 id="name-local-certificate-issuance-">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-local-certificate-issuance-" class="section-name selfRef">Local Certificate Issuance and Enrollment</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-5.3-1.1">
+            <strong>BRSKI and BRSKI-PRM:</strong> Bootstrapping Remote Secure Key Infrastructure <span>[<a href="#RFC8995" class="cite xref">RFC8995</a>]</span> automates provisioning using manufacturer IDevIDs. BRSKI-PRM <span>[<a href="#I-D.ietf-anima-brski-prm" class="cite xref">I-D.ietf-anima-brski-prm</a>]</span> demonstrates the value of <em>object security</em> (signed Vouchers) over transport security for environments where pledges cannot initiate TLS connections. While powerful, BRSKI requires a supply chain root of trust, which is absent in self-hosted consumer scenarios.<a href="#section-5.3-1.1" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.14">
-          <strong>SDSI/SPKI:</strong> Simple Distributed Security Infrastructure <span>[<a href="#RFC2693" class="cite xref">RFC2693</a>]</span> proposed a decentralized PKI binding authorizations directly to keys. While conceptually aligned with local trust, modern web browsers mandate X.509 <span>[<a href="#RFC5280" class="cite xref">RFC5280</a>]</span> for compatibility.<a href="#section-5-2.14" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.3-1.2">
+            <strong>Local Referees and ACME:</strong> Architectures utilizing a central local hub to authenticate servers <span>[<a href="#I-D.wing-settle-referee" class="cite xref">I-D.wing-settle-referee</a>]</span> or issue certificates via a local ACME server <span>[<a href="#I-D.sweet-iot-acme" class="cite xref">I-D.sweet-iot-acme</a>]</span> optimize UX but require initial bootstrapping of the Referee itself. Such a server can also issue for a literal address using IP identifiers <span>[<a href="#RFC8738" class="cite xref">RFC8738</a>]</span>, which a public CA cannot validate on a private network.<a href="#section-5.3-1.2" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.15">
-          <strong>Local Public Key Hashes:</strong> Approaches that embed public key hashes into local domain names <span>[<a href="#I-D.wing-settle-public-key-hash" class="cite xref">I-D.wing-settle-public-key-hash</a>]</span> offer self-certifying namespaces but sacrifice human-readability.<a href="#section-5-2.15" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.3-1.3">
+            <strong>Autonomic Control Plane:</strong> <span>[<a href="#RFC8994" class="cite xref">RFC8994</a>]</span> builds a self-forming mesh whose members authenticate each other with certificates from a private domain CA, and is designed to keep working with no Internet access and no working data plane. It is the closest deployed IETF analogue to Track B, though it leaves enrollment out of scope rather than mandating BRSKI.<a href="#section-5.3-1.3" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.16">
-          <strong>Local Referees and ACME:</strong> Architectures utilizing a central local hub to authenticate servers <span>[<a href="#I-D.wing-settle-referee" class="cite xref">I-D.wing-settle-referee</a>]</span> or issue certificates via a local ACME server <span>[<a href="#I-D.sweet-iot-acme" class="cite xref">I-D.sweet-iot-acme</a>]</span> optimize UX but require initial bootstrapping of the Referee itself. Such a server can also issue for a literal address using IP identifiers <span>[<a href="#RFC8738" class="cite xref">RFC8738</a>]</span>, which a public CA cannot validate on a private network.<a href="#section-5-2.16" class="pilcrow">¶</a>
+        </ul>
+</section>
+<section id="section-5.4">
+        <h3 id="name-keys-certificates-and-brows">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-keys-certificates-and-brows" class="section-name selfRef">Keys, Certificates, and Browser Mechanisms</a>
+        </h3>
+<ul class="normal">
+<li class="normal" id="section-5.4-1.1">
+            <strong>Raw Public Keys in TLS:</strong> <span>[<a href="#RFC7250" class="cite xref">RFC7250</a>]</span> lets a peer present a bare public key instead of a certificate chain. It states that authentication then rests entirely on binding that key to an identity out of band, and deliberately leaves how unspecified. That binding is what SETTLE has to supply.<a href="#section-5.4-1.1" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.17">
-          <strong>Autonomic Control Plane:</strong> <span>[<a href="#RFC8994" class="cite xref">RFC8994</a>]</span> builds a self-forming mesh whose members authenticate each other with certificates from a private domain CA, and is designed to keep working with no Internet access and no working data plane. It is the closest deployed IETF analogue to Track B, though it leaves enrollment out of scope rather than mandating BRSKI.<a href="#section-5-2.17" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.4-1.2">
+            <strong>SDSI/SPKI:</strong> Simple Distributed Security Infrastructure <span>[<a href="#RFC2693" class="cite xref">RFC2693</a>]</span> proposed a decentralized PKI binding authorizations directly to keys. While conceptually aligned with local trust, modern web browsers mandate X.509 <span>[<a href="#RFC5280" class="cite xref">RFC5280</a>]</span> for compatibility.<a href="#section-5.4-1.2" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.18">
-          <strong>WebTransport Certificate Hashes:</strong> Browsers already accept a self-signed certificate from a local server when its SHA-256 hash is supplied out of band <span>[<a href="#W3C.WebTransport" class="cite xref">W3C.WebTransport</a>]</span>. The certificate must use an ECDSA key and may be valid for at most 14 days. This is the limit of CA-free local TLS in a browser today, and it sets a renewal cadence that offline devices have to meet.<a href="#section-5-2.18" class="pilcrow">¶</a>
+          <li class="normal" id="section-5.4-1.3">
+            <strong>WebTransport Certificate Hashes:</strong> Browsers already accept a self-signed certificate from a local server when its SHA-256 hash is supplied out of band <span>[<a href="#W3C.WebTransport" class="cite xref">W3C.WebTransport</a>]</span>. The certificate must use an ECDSA key and may be valid for at most 14 days. This is the limit of CA-free local TLS in a browser today, and it sets a renewal cadence that offline devices have to meet.<a href="#section-5.4-1.3" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="section-5-2.19">
-          <strong>EDHOC:</strong> <span>[<a href="#RFC9528" class="cite xref">RFC9528</a>]</span> offers a compact authenticated key exchange for constrained devices, carrying credentials by reference or by value, where a TLS handshake would be too large.<a href="#section-5-2.19" class="pilcrow">¶</a>
-</li>
-      </ul>
+        </ul>
+</section>
 </section>
 <section id="section-6">
       <h2 id="name-operational-tracks">
@@ -1681,20 +1718,24 @@ li > p:last-of-type:only-child {
           <dd style="margin-left: 1.5em" id="section-7.2-1.2">The architecture MUST NOT rely on Trust On First Use (TOFU) executed exclusively over the local network interface for initial authentication.<a href="#section-7.2-1.2" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-7.2-1.3">REQ-TRUST-02: Out-of-Band (OOB) Ceremony</dt>
-          <dd style="margin-left: 1.5em" id="section-7.2-1.4">The system MUST define or profile an OOB mechanism to transfer trust entropy. The OOB material MUST provide at least 128 bits of entropy to resist offline dictionary and GPU brute-force attacks.<a href="#section-7.2-1.4" class="pilcrow">¶</a>
+<dt id="section-7.2-1.3">REQ-TRUST-02a: Out-of-Band (OOB) Ceremony</dt>
+          <dd style="margin-left: 1.5em" id="section-7.2-1.4">The system MUST define or profile an OOB mechanism to transfer trust entropy. OOB material that directly authenticates a key, such as a key hash in a QR code, is a bearer secret. That material MUST provide at least 128 bits of entropy to resist offline dictionary and GPU brute-force attacks.<a href="#section-7.2-1.4" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-7.2-1.5">REQ-TRUST-03: Pre-Installed Trust Optimization</dt>
-          <dd style="margin-left: 1.5em" id="section-7.2-1.6">The system SHOULD support the use of manufacturer-installed certificates (e.g., IDevID <span>[<a href="#IEEE.802.1AR" class="cite xref">IEEE.802.1AR</a>]</span>, <span>[<a href="#I-D.irtf-t2trg-taxonomy-manufacturer-anchors" class="cite xref">I-D.irtf-t2trg-taxonomy-manufacturer-anchors</a>]</span>). When used, the system MUST define a mechanism (e.g., Vouchers <span>[<a href="#RFC8366" class="cite xref">RFC8366</a>]</span>) to cryptographically bind the manufacturer-provided identity to the user-facing Local Device Name. This mechanism MUST NOT be the only method supported.<a href="#section-7.2-1.6" class="pilcrow">¶</a>
+<dt id="section-7.2-1.5">REQ-TRUST-02b: Bounded Guessing for Low-Entropy OOB Material</dt>
+          <dd style="margin-left: 1.5em" id="section-7.2-1.6">OOB material consumed by a PAKE or by a commit-and-compare ceremony MAY carry less entropy. The protocol MUST then limit an active attacker to a bounded number of online guesses per ceremony, and MUST NOT allow guesses to be tested offline against recorded traffic. ZRTP <span>[<a href="#RFC6189" class="cite xref">RFC6189</a>]</span> shows how far this goes: hash commitment limits the attacker to one guess, so even a 16-bit comparison string leaves one chance in 65536 of escaping detection.<a href="#section-7.2-1.6" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-7.2-1.7">REQ-TRUST-04: Dynamic Local Trust Store</dt>
-          <dd style="margin-left: 1.5em" id="section-7.2-1.8">User Agents MUST implement a scoped, dynamic trust store capable of ingesting and persisting Trust Anchors generated or verified via OOB Ceremonies, independent of the OS-level global PKI trust store.<a href="#section-7.2-1.8" class="pilcrow">¶</a>
+<dt id="section-7.2-1.7">REQ-TRUST-03: Pre-Installed Trust Optimization</dt>
+          <dd style="margin-left: 1.5em" id="section-7.2-1.8">The system SHOULD support the use of manufacturer-installed certificates (e.g., IDevID <span>[<a href="#IEEE.802.1AR" class="cite xref">IEEE.802.1AR</a>]</span>, <span>[<a href="#I-D.irtf-t2trg-taxonomy-manufacturer-anchors" class="cite xref">I-D.irtf-t2trg-taxonomy-manufacturer-anchors</a>]</span>). When used, the system MUST define a mechanism (e.g., Vouchers <span>[<a href="#RFC8366" class="cite xref">RFC8366</a>]</span>) to cryptographically bind the manufacturer-provided identity to the user-facing Local Device Name. This mechanism MUST NOT be the only method supported.<a href="#section-7.2-1.8" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
-<dt id="section-7.2-1.9">REQ-TRUST-05: Mutual Authentication</dt>
-          <dd style="margin-left: 1.5em" id="section-7.2-1.10">The bootstrapping protocol MUST support mutual authentication, allowing both the User Agent to verify the Target, and the Target to verify the authorization of the User Agent connecting to it.<a href="#section-7.2-1.10" class="pilcrow">¶</a>
+<dt id="section-7.2-1.9">REQ-TRUST-04: Dynamic Local Trust Store</dt>
+          <dd style="margin-left: 1.5em" id="section-7.2-1.10">User Agents MUST implement a scoped, dynamic trust store capable of ingesting and persisting Trust Anchors generated or verified via OOB Ceremonies, independent of the OS-level global PKI trust store.<a href="#section-7.2-1.10" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-7.2-1.11">REQ-TRUST-05: Mutual Authentication</dt>
+          <dd style="margin-left: 1.5em" id="section-7.2-1.12">The bootstrapping protocol MUST support mutual authentication, allowing both the User Agent to verify the Target, and the Target to verify the authorization of the User Agent connecting to it.<a href="#section-7.2-1.12" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
@@ -1717,7 +1758,7 @@ li > p:last-of-type:only-child {
 </dd>
           <dd class="break"></dd>
 <dt id="section-7.3-1.7">REQ-TRANS-04: Browser Policy Compatibility</dt>
-          <dd style="margin-left: 1.5em" id="section-7.3-1.8">The protocol MUST integrate seamlessly with browser Local Network Access (LNA) policies. Devices MUST be capable of serving verifiable certificates to answer preflights, enabling transparent authorization and minimizing unnecessary user friction.<a href="#section-7.3-1.8" class="pilcrow">¶</a>
+          <dd style="margin-left: 1.5em" id="section-7.3-1.8">Browsers are introducing Local Network Access (LNA) policies that gate requests to local network addresses behind a user permission prompt <span>[<a href="#WICG.LNA" class="cite xref">WICG.LNA</a>]</span>. Devices SHOULD serve certificates that validate under this document's trust model, so that a connection permitted by LNA also yields a Secure Context. LNA is a single-vendor design still in flux, so this document states no MUST against it.<a href="#section-7.3-1.8" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-7.3-1.9">REQ-TRANS-05: Interoperability and Agility</dt>
@@ -1767,7 +1808,7 @@ li > p:last-of-type:only-child {
         <h3 id="name-evil-twin-and-network-imper">
 <a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-evil-twin-and-network-imper" class="section-name selfRef">Evil Twin and Network Impersonation</a>
         </h3>
-<p id="section-8.1-1">An attacker may clone a local Wi-Fi access point (Evil Twin), spoof BSSIDs, or poison mDNS caches to redirect traffic to a malicious endpoint. Because SETTLE mandates an OOB Ceremony (REQ-TRUST-02) and rejects pure TOFU, the UA will detect the certificate mismatch and abort the connection, neutralizing the impersonation.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
+<p id="section-8.1-1">An attacker may clone a local Wi-Fi access point (Evil Twin), spoof BSSIDs, or poison mDNS caches to redirect traffic to a malicious endpoint. Because SETTLE mandates an OOB Ceremony (REQ-TRUST-02a) and rejects pure TOFU, the UA will detect the certificate mismatch and abort the connection, neutralizing the impersonation.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
 </section>
 <section id="section-8.2">
         <h3 id="name-compromise-of-the-referee">
@@ -1827,7 +1868,7 @@ li > p:last-of-type:only-child {
 <a href="#section-10" class="section-number selfRef">10. </a><a href="#name-implementation-status" class="section-name selfRef">Implementation Status</a>
       </h2>
 <p id="section-10-1">[ RFC Editor: This section to be deleted before RFC publication, per <span>[<a href="#RFC7942" class="cite xref">RFC7942</a>]</span> ]<a href="#section-10-1" class="pilcrow">¶</a></p>
-<p id="section-10-2">The following implementation informs the discovery-channel discussion in Track A. It is offered as evidence that the mechanism is realizable on existing stacks, not as an endorsement of a particular design.<a href="#section-10-2" class="pilcrow">¶</a></p>
+<p id="section-10-2">The following implementation informs the discovery-channel discussion in Track A. It is offered as evidence that the mechanism is realizable on existing stacks, not as an endorsement of a particular design. Disclosure: one editor of this document (De Backker) is a maintainer of the pion project.<a href="#section-10-2" class="pilcrow">¶</a></p>
 <p id="section-10-3">The pion DTLS library carries a DTLS handshake over DNS-SD <span>[<a href="#PionDTLSmDNS" class="cite xref">PionDTLSmDNS</a>]</span>. It exposes a transport-agnostic synchronous handshake interface, modeled on the QUIC handshake interface in the Go standard library, that yields handshake flights as datagram batches instead of owning a socket. The accompanying example splits each flight across DNS-SD TXT keys, publishes it as a record update, and attaches the completed connection to a unicast UDP socket once the handshake finishes. The example authenticates with a pre-shared key and does not protect the discovery records themselves, so it demonstrates feasibility of the transport arrangement rather than the privacy properties sought by <span>[<a href="#I-D.huitema-dnssd-tls-privacy" class="cite xref">I-D.huitema-dnssd-tls-privacy</a>]</span>. At the time of writing this work is unmerged.<a href="#section-10-3" class="pilcrow">¶</a></p>
 </section>
 <section id="section-11">
@@ -1992,10 +2033,6 @@ li > p:last-of-type:only-child {
       <dd>
 <span class="refAuthor">Pauly, T.</span>, <span class="refAuthor">Kinnear, E.</span>, <span class="refAuthor">Wood, C. A.</span>, <span class="refAuthor">McManus, P.</span>, and <span class="refAuthor">T. Jensen</span>, <span class="refTitle">"Discovery of Designated Resolvers"</span>, <span class="seriesInfo">RFC 9462</span>, <span class="seriesInfo">DOI 10.17487/RFC9462</span>, <time datetime="2023-11" class="refDate">November 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9462">https://www.rfc-editor.org/info/rfc9462</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="RFC9528">[RFC9528]</dt>
-      <dd>
-<span class="refAuthor">Selander, G.</span>, <span class="refAuthor">Preuß Mattsson, J.</span>, and <span class="refAuthor">F. Palombini</span>, <span class="refTitle">"Ephemeral Diffie-Hellman Over COSE (EDHOC)"</span>, <span class="seriesInfo">RFC 9528</span>, <span class="seriesInfo">DOI 10.17487/RFC9528</span>, <time datetime="2024-03" class="refDate">March 2024</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9528">https://www.rfc-editor.org/info/rfc9528</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="RFC9665">[RFC9665]</dt>
       <dd>
 <span class="refAuthor">Lemon, T.</span> and <span class="refAuthor">S. Cheshire</span>, <span class="refTitle">"Service Registration Protocol for DNS-Based Service Discovery"</span>, <span class="seriesInfo">RFC 9665</span>, <span class="seriesInfo">DOI 10.17487/RFC9665</span>, <time datetime="2025-06" class="refDate">June 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9665">https://www.rfc-editor.org/info/rfc9665</a>&gt;</span>. </dd>
@@ -2068,6 +2105,10 @@ li > p:last-of-type:only-child {
       <dd>
 <span class="refAuthor">Hoyland, J.</span> and <span class="refAuthor">O. Friel</span>, <span class="refTitle">"TLS 1.3 Extension for Password-Authenticated Key Exchange"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-pake-00</span>, <time datetime="2025-09" class="refDate">September 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-pake">https://datatracker.ietf.org/doc/html/draft-ietf-tls-pake</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="WICG.LNA">[WICG.LNA]</dt>
+      <dd>
+<span class="refAuthor">WICG</span>, <span class="refTitle">"Local Network Access"</span>, <span class="seriesInfo">W3C Draft Community Group Report</span>, <time datetime="2025" class="refDate">2025</time>, <span>&lt;<a href="https://wicg.github.io/local-network-access/">https://wicg.github.io/local-network-access/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="W3C.WebTransport">[W3C.WebTransport]</dt>
       <dd>
 <span class="refAuthor">W3C</span>, <span class="refTitle">"WebTransport"</span>, <span class="seriesInfo">W3C Working Draft</span>, <time datetime="2026" class="refDate">2026</time>, <span>&lt;<a href="https://www.w3.org/TR/webtransport/">https://www.w3.org/TR/webtransport/</a>&gt;</span>. </dd>
@@ -2094,7 +2135,7 @@ li > p:last-of-type:only-child {
 <dd class="break"></dd>
 <dt id="PionDTLSmDNS">[PionDTLSmDNS]</dt>
       <dd>
-<span class="refAuthor">pion</span>, <span class="refTitle">"Implement sync HandshakeConn API, with an example carrying a DTLS handshake over mDNS"</span>, <span class="refContent">pion/dtls pull request 1094</span>, <time datetime="2026-09" class="refDate">September 2026</time>, <span>&lt;<a href="https://github.com/pion/dtls/pull/1094">https://github.com/pion/dtls/pull/1094</a>&gt;</span>. </dd>
+<span class="refAuthor">pion</span>, <span class="refTitle">"Implement sync HandshakeConn API, with an example carrying a DTLS handshake over mDNS"</span>, <span class="refContent">pion/dtls commit fd43549</span>, <time datetime="2026-09" class="refDate">September 2026</time>, <span>&lt;<a href="https://github.com/pion/dtls/commit/fd43549314dc0cf8637167cd5af7ffb521951d80">https://github.com/pion/dtls/commit/fd43549314dc0cf8637167cd5af7ffb521951d80</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="ZookosTriangle">[ZookosTriangle]</dt>
     <dd>
@@ -2130,6 +2171,14 @@ li > p:last-of-type:only-child {
         <li class="normal" id="appendix-A-3.10">Added DANE and SSHFP (RFC 6698, RFC 4255) to the approaches ruled out, and engaged Opportunistic Security (RFC 7435) where TOFU is rejected.<a href="#appendix-A-3.10" class="pilcrow">¶</a>
 </li>
         <li class="normal" id="appendix-A-3.11">Noted MUD (RFC 8520) in Security Considerations as post-onboarding scoping.<a href="#appendix-A-3.11" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-3.12">Grouped Prior Art and Related Work into topical sub-sections and dropped the EDHOC mention (RFC 9528).<a href="#appendix-A-3.12" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-3.13">Split REQ-TRUST-02: the 128-bit entropy floor now applies only to OOB material that directly authenticates a key (REQ-TRUST-02a); material consumed by a PAKE or commit-and-compare ceremony instead requires bounded online guessing (REQ-TRUST-02b). Reworded the Matter bullet to match.<a href="#appendix-A-3.13" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-3.14">Rewrote REQ-TRANS-04 against the current WICG Local Network Access permission-prompt model, downgraded it to SHOULD, and added the WICG.LNA reference.<a href="#appendix-A-3.14" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-3.15">Implementation Status: disclosed the editor's pion affiliation and pinned the pion citation to a commit.<a href="#appendix-A-3.15" class="pilcrow">¶</a>
 </li>
       </ul>
 <p id="appendix-A-4">February 21, 2026 - draft-ietf-settle-requirements-02<a href="#appendix-A-4" class="pilcrow">¶</a></p>
