@@ -71,30 +71,30 @@ Table of Contents
    3.  Security and Threat Model . . . . . . . . . . . . . . . . . .   5
    4.  Problem Statement and Formal Derivation . . . . . . . . . . .   6
    5.  Prior Art and Related Work  . . . . . . . . . . . . . . . . .   7
-   6.  Operational Tracks  . . . . . . . . . . . . . . . . . . . . .   8
-     6.1.  Track A: Direct Peer Bootstrapping  . . . . . . . . . . .   9
-     6.2.  Track B: Scaled Trust via Referee . . . . . . . . . . . .   9
-   7.  Requirements  . . . . . . . . . . . . . . . . . . . . . . . .   9
-     7.1.  Naming and Discovery (REQ-NAME) . . . . . . . . . . . . .  10
-     7.2.  Trust and Bootstrapping (REQ-TRUST) . . . . . . . . . . .  10
-     7.3.  Protocol and Transport (REQ-TRANS)  . . . . . . . . . . .  11
-     7.4.  Architecture and Management (REQ-ARCH)  . . . . . . . . .  12
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  12
-     8.1.  Evil Twin and Network Impersonation . . . . . . . . . . .  12
-     8.2.  Compromise of the Referee . . . . . . . . . . . . . . . .  13
-     8.3.  Social Engineering and Support Scams  . . . . . . . . . .  13
-     8.4.  Confused Deputy Attacks . . . . . . . . . . . . . . . . .  13
-     8.5.  Factory Reset Incompleteness  . . . . . . . . . . . . . .  13
-     8.6.  Supply Chain Attacks  . . . . . . . . . . . . . . . . . .  13
-     8.7.  OS Isolation of DHCP Configuration  . . . . . . . . . . .  14
-     8.8.  Denial of Service . . . . . . . . . . . . . . . . . . . .  14
-   9.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  14
-   10. Implementation Status . . . . . . . . . . . . . . . . . . . .  15
-   11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  15
-   12. Normative References  . . . . . . . . . . . . . . . . . . . .  15
-   13. Informative References  . . . . . . . . . . . . . . . . . . .  17
-   Appendix A.  Change History . . . . . . . . . . . . . . . . . . .  21
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  22
+   6.  Operational Tracks  . . . . . . . . . . . . . . . . . . . . .  10
+     6.1.  Track A: Direct Peer Bootstrapping  . . . . . . . . . . .  10
+     6.2.  Track B: Scaled Trust via Referee . . . . . . . . . . . .  11
+   7.  Requirements  . . . . . . . . . . . . . . . . . . . . . . . .  11
+     7.1.  Naming and Discovery (REQ-NAME) . . . . . . . . . . . . .  11
+     7.2.  Trust and Bootstrapping (REQ-TRUST) . . . . . . . . . . .  12
+     7.3.  Protocol and Transport (REQ-TRANS)  . . . . . . . . . . .  13
+     7.4.  Architecture and Management (REQ-ARCH)  . . . . . . . . .  13
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  14
+     8.1.  Evil Twin and Network Impersonation . . . . . . . . . . .  14
+     8.2.  Compromise of the Referee . . . . . . . . . . . . . . . .  14
+     8.3.  Social Engineering and Support Scams  . . . . . . . . . .  14
+     8.4.  Confused Deputy Attacks . . . . . . . . . . . . . . . . .  14
+     8.5.  Factory Reset Incompleteness  . . . . . . . . . . . . . .  15
+     8.6.  Supply Chain Attacks  . . . . . . . . . . . . . . . . . .  15
+     8.7.  OS Isolation of DHCP Configuration  . . . . . . . . . . .  15
+     8.8.  Denial of Service . . . . . . . . . . . . . . . . . . . .  15
+   9.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  15
+   10. Implementation Status . . . . . . . . . . . . . . . . . . . .  16
+   11. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  17
+   12. Normative References  . . . . . . . . . . . . . . . . . . . .  17
+   13. Informative References  . . . . . . . . . . . . . . . . . . .  18
+   Appendix A.  Change History . . . . . . . . . . . . . . . . . . .  24
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  26
 
 1.  Introduction
 
@@ -338,8 +338,20 @@ Sweet & De Backker       Expires 25 August 2026                 [Page 6]
 Internet-Draft             SETTLE Requirements             February 2026
 
 
+   *  _DNS-Published Bindings:_ DANE [RFC6698] and SSHFP [RFC4255]
+      publish a certificate or a key fingerprint in DNS instead of
+      relying on a CA.  Both require DNSSEC to protect that record, and
+      a local namespace has no signed parent to validate against, so the
+      record cannot be trusted and SSHFP falls back to TOFU.
+
    *  _Trust On First Use (TOFU):_ As established in the Threat Model,
       TOFU automates vulnerability rather than solving warning fatigue.
+      Opportunistic Security [RFC7435] takes the opposite view, treating
+      stored TOFU state as a usable signal, and it is right that some
+      protection beats none where authentication is impossible.
+      SETTLE's claim is narrower: on a local network the user is
+      physically present, so a ceremony is available and an
+      unauthenticated default is not needed.
 
    *Conclusion:* To establish Secure Contexts without Cloud or
    Manufacturer-only infrastructure, the system must utilize the User to
@@ -352,6 +364,16 @@ Internet-Draft             SETTLE Requirements             February 2026
    The SETTLE architecture builds upon and differentiates itself from
    several existing approaches:
 
+   *  *Device Pairing Research:* The pattern SETTLE depends on is
+      decades old.  "The Resurrecting Duckling" [Duckling] described
+      secure transient association, where a device imprints on an owner
+      and a reset returns it to an unowned state.  "Talking to
+      Strangers" [TalkingToStrangers] introduced pre-authentication over
+      a location-limited channel followed by key exchange over the
+      network.  "Seeing-is-Believing" [SeeingIsBelieving] made that
+      channel a camera reading a printed barcode, which is the QR
+      ceremony still in use.
+
    *  *BRSKI and BRSKI-PRM:* Bootstrapping Remote Secure Key
       Infrastructure [RFC8995] automates provisioning using manufacturer
       IDevIDs.  BRSKI-PRM [I-D.ietf-anima-brski-prm] demonstrates the
@@ -360,11 +382,24 @@ Internet-Draft             SETTLE Requirements             February 2026
       connections.  While powerful, BRSKI requires a supply chain root
       of trust, which is absent in self-hosted consumer scenarios.
 
+
+
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                 [Page 7]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
    *  *Matter Protocol:* Matter utilizes Password-Authenticated Session
-      Establishment (PASE) [Matter] for onboarding.  However, security
-      analyses have highlighted flaws including low-entropy (27-bit)
-      passcodes and static salts, emphasizing the need for higher
-      entropy in OOB ceremonies.
+      Establishment (PASE) [Matter] for onboarding, which is built on
+      SPAKE2+ [RFC9383] rather than SPAKE2.  However, security analyses
+      have highlighted flaws including low-entropy (27-bit) passcodes
+      and static salts, emphasizing the need for higher entropy in OOB
+      ceremonies.
 
    *  *Wi-Fi Easy Connect (DPP):* Uses QR codes containing public keys
       to bootstrap WPA3 credentials [DPP].  This provides a strong
@@ -382,45 +417,75 @@ Internet-Draft             SETTLE Requirements             February 2026
       [I-D.ietf-tls-pake] may provide a standardized transport for this
       class of bootstrapping.
 
+   *  *EAP-NOOB:* [RFC9140] bootstraps a device that has no credentials
+      at all by running a key exchange in band and authenticating it
+      with a user-assisted OOB message.  That message carries two
+      values: a secret nonce that authenticates the exchange, and a
+      fingerprint that keeps impersonation detectable even if the nonce
+      is overheard.  It requires the OOB message to be generated per
+      ceremony and rejects static printed codes, because a printed code
+      can leak and be reused later.
+
+   *  *ZRTP Short Authentication Strings:* [RFC6189] commits to the
+      Diffie-Hellman values before revealing them, then has two users
+      compare a short string.  Because the attacker must commit to one
+      guess, 16 bits suffices, giving an attacker one chance in 65536 of
+      going undetected.  A short ceremony is not weak by itself; what
+      matters is whether an attacker gets more than one attempt.
+
+   *  *Raw Public Keys in TLS:* [RFC7250] lets a peer present a bare
+      public key instead of a certificate chain.  It states that
+      authentication then rests entirely on binding that key to an
+      identity out of band, and deliberately leaves how unspecified.
+      That binding is what SETTLE has to supply.
+
+
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                 [Page 8]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
    *  *AirDrop / PrivateDrop:* Traditional local discovery using
       truncated hashes leaks user identifiers.  Research into Private
       Set Intersection (PSI) [PrivateDrop] demonstrates that privacy-
       preserving mutual discovery is feasible with sub-second latency.
 
-
-
-Sweet & De Backker       Expires 25 August 2026                 [Page 7]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
-
    *  *Private DNS-SD with Encrypted SNI:* Earlier DNS-SD privacy work
-      [I-D.huitema-dnssd-tls-privacy] merged discovery and handshake
-      into a single exchange.  The client multicasts a DTLS or QUIC
-      ClientHello carrying an Encrypted SNI extension keyed by a per-
-      service Discovery Key that is deliberately not published in DNS;
-      only a service holding the matching private key can decrypt it,
-      and it answers by unicast.  Requirements for this class of
-      mechanism were published as [RFC8882].  The construction is
-      instructive for SETTLE in two respects.  First, it shows that
-      authentication material can travel on the discovery channel itself
-      rather than in a separate unicast exchange.  Second, it explicitly
-      left provisioning of the Discovery Key out of scope, which is
-      exactly the gap an OOB Ceremony fills.  The draft expired without
-      adoption, and Encrypted SNI has since been superseded by Encrypted
-      Client Hello [RFC9849].
+      [I-D.huitema-dnssd-tls-privacy] made discovery and the handshake
+      one exchange.  The client multicasts a ClientHello whose Encrypted
+      SNI is keyed to a per-service Discovery Key that is never
+      published in DNS, so only a service holding that key can answer.
+      [RFC8882] sets out requirements for this class of mechanism.  The
+      draft expired without adoption and left key provisioning out of
+      scope, which is the gap an OOB Ceremony fills.  Encrypted SNI is
+      now superseded by Encrypted Client Hello [RFC9849].
 
    *  *Security Parameters in Discovery Records:* Work on discovering
-      encrypted DNS resolvers [I-D.liu-add-dnssd-edns] advertises
-      certificate validation material directly in DNS-SD records,
-      carrying an Authentication Domain Name or a SHA-256 certificate
-      fingerprint in TXT keys and SVCB parameters [RFC9460].  It offers
-      three validation models (public PKI, fingerprint pinning, and
-      private trust anchors), and permits transferring the fingerprint
-      or domain name out of band, for example by QR code.  It also
-      concludes that clients SHOULD NOT automatically trust a discovered
-      service, converging with SETTLE's rejection of network TOFU from a
-      different starting point.
+      encrypted DNS resolvers [I-D.liu-add-dnssd-edns] puts validation
+      material in the discovery records themselves, either an
+      Authentication Domain Name or a SHA-256 certificate fingerprint,
+      carried in TXT keys or SVCB parameters [RFC9460].  It allows that
+      material to be transferred out of band, and it tells clients not
+      to trust a discovered service automatically, which matches
+      SETTLE's rejection of network TOFU.
+
+   *  *Service Registration Protocol:* [RFC9665] lets a device claim a
+      local DNS-SD name first come, first served and defend it with a
+      key pair it generates itself, with no CA involved.  It is explicit
+      that this proves only that later updates come from the original
+      registrant.  It solves naming, not authentication.
+
+   *  *Discovery of Designated Resolvers:* [RFC9462] verifies a
+      discovered resolver by requiring its address in an iPAddress SAN
+      entry, the model REQ-TRANS-03 asks for.  For private, unique
+      local, and link-local addresses it instead defines an
+      opportunistic mode that skips name validation, a standardized
+      instance of the shortcut SETTLE rejects.
 
    *  *SDSI/SPKI:* Simple Distributed Security Infrastructure [RFC2693]
       proposed a decentralized PKI binding authorizations directly to
@@ -431,24 +496,46 @@ Internet-Draft             SETTLE Requirements             February 2026
       into local domain names [I-D.wing-settle-public-key-hash] offer
       self-certifying namespaces but sacrifice human-readability.
 
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                 [Page 9]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
    *  *Local Referees and ACME:* Architectures utilizing a central local
       hub to authenticate servers [I-D.wing-settle-referee] or issue
       certificates via a local ACME server [I-D.sweet-iot-acme] optimize
-      UX but require initial bootstrapping of the Referee itself.
+      UX but require initial bootstrapping of the Referee itself.  Such
+      a server can also issue for a literal address using IP identifiers
+      [RFC8738], which a public CA cannot validate on a private network.
+
+   *  *Autonomic Control Plane:* [RFC8994] builds a self-forming mesh
+      whose members authenticate each other with certificates from a
+      private domain CA, and is designed to keep working with no
+      Internet access and no working data plane.  It is the closest
+      deployed IETF analogue to Track B, though it leaves enrollment out
+      of scope rather than mandating BRSKI.
+
+   *  *WebTransport Certificate Hashes:* Browsers already accept a self-
+      signed certificate from a local server when its SHA-256 hash is
+      supplied out of band [W3C.WebTransport].  The certificate must use
+      an ECDSA key and may be valid for at most 14 days.  This is the
+      limit of CA-free local TLS in a browser today, and it sets a
+      renewal cadence that offline devices have to meet.
+
+   *  *EDHOC:* [RFC9528] offers a compact authenticated key exchange for
+      constrained devices, carrying credentials by reference or by
+      value, where a TLS handshake would be too large.
 
 6.  Operational Tracks
 
    To prevent circular dependencies, SETTLE requirements are organized
    into two composable tracks.  Implementers may choose the track
    appropriate for their ecosystem.
-
-
-
-
-Sweet & De Backker       Expires 25 August 2026                 [Page 8]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
 
 6.1.  Track A: Direct Peer Bootstrapping
 
@@ -468,20 +555,23 @@ Internet-Draft             SETTLE Requirements             February 2026
    This track is optimized for ad-hoc connections and generic hardware,
    bridging the gap without relying on any intermediaries.
 
-   The bootstrapping handshake need not occupy a separate unicast
-   exchange.  Prior work multicast the initial DTLS or QUIC flight over
-   the discovery channel itself [I-D.huitema-dnssd-tls-privacy], and an
-   existing implementation carries each DTLS handshake flight in updates
-   to a DNS-SD TXT record [PionDTLSmDNS], attaching the completed
-   connection to a unicast socket afterwards.  Collapsing discovery and
-   handshake removes a round of rendezvous and avoids advertising a
-   reachable pre-authentication endpoint.  It also has costs: discovery
-   records impose a size ceiling that forces handshake material to be
-   split across keys, multicast delivery exposes each flight to every
-   listener on the link, and every listener bears the parsing cost.
-   Designs taking this approach need to account for the privacy and
-   denial-of-service consequences described in the Security and Privacy
-   Considerations sections below.
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 10]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
+   The handshake need not be a separate unicast exchange.  Prior work
+   multicast the first flight on the discovery channel itself
+   [I-D.huitema-dnssd-tls-privacy], and one implementation carries each
+   DTLS flight in DNS-SD TXT record updates before attaching the
+   finished connection to a unicast socket [PionDTLSmDNS].  This saves a
+   round of rendezvous and avoids exposing an endpoint before
+   authentication.  The costs are that discovery records are size-
+   bounded, that every listener on the link can read each flight, and
+   that every listener pays to parse it.  See the Privacy and Security
+   Considerations sections.
 
 6.2.  Track B: Scaled Trust via Referee
 
@@ -495,16 +585,6 @@ Internet-Draft             SETTLE Requirements             February 2026
    binding to the Referee.
 
 7.  Requirements
-
-
-
-
-
-
-Sweet & De Backker       Expires 25 August 2026                 [Page 9]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
 
 7.1.  Naming and Discovery (REQ-NAME)
 
@@ -530,6 +610,14 @@ Internet-Draft             SETTLE Requirements             February 2026
       additionally carry transport-security parameters, such as
       supported protocols or a certificate fingerprint published in TXT
       keys or SVCB parameters [I-D.liu-add-dnssd-edns].  Such parameters
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 11]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
       are unauthenticated hints that allow a client to select a
       transport; they MUST NOT be treated as a trust anchor distribution
       channel, for the same reason DHCP-supplied anchors are out of
@@ -553,15 +641,6 @@ Internet-Draft             SETTLE Requirements             February 2026
       local network interface for initial authentication.
 
    REQ-TRUST-02: Out-of-Band (OOB) Ceremony  The system MUST define or
-
-
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 10]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
-
       profile an OOB mechanism to transfer trust entropy.  The OOB
       material MUST provide at least 128 bits of entropy to resist
       offline dictionary and GPU brute-force attacks.
@@ -584,6 +663,16 @@ Internet-Draft             SETTLE Requirements             February 2026
       support mutual authentication, allowing both the User Agent to
       verify the Target, and the Target to verify the authorization of
       the User Agent connecting to it.
+
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 12]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
 
 7.3.  Protocol and Transport (REQ-TRANS)
 
@@ -609,15 +698,6 @@ Internet-Draft             SETTLE Requirements             February 2026
       authorization and minimizing unnecessary user friction.
 
    REQ-TRANS-05: Interoperability and Agility  The protocols chosen MUST
-
-
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 11]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
-
       support cryptographic agility to accommodate future algorithm
       deprecations and ensure interoperability between independent
       vendor implementations.
@@ -643,6 +723,13 @@ Internet-Draft             SETTLE Requirements             February 2026
       administrator vs. guest), preventing unauthorized configuration
       changes.
 
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 13]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
    REQ-ARCH-04b: Audit and Transparency  Devices SHOULD provide a
       standard API allowing authorized controllers to audit all active
       trust bindings and access control lists to prevent "hidden"
@@ -664,15 +751,6 @@ Internet-Draft             SETTLE Requirements             February 2026
    endpoint.  Because SETTLE mandates an OOB Ceremony (REQ-TRUST-02) and
    rejects pure TOFU, the UA will detect the certificate mismatch and
    abort the connection, neutralizing the impersonation.
-
-
-
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 12]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
 
 8.2.  Compromise of the Referee
 
@@ -701,6 +779,13 @@ Internet-Draft             SETTLE Requirements             February 2026
    (REQ-TRANS-04) ensures devices reject unauthenticated cross-origin
    requests.
 
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 14]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
 8.5.  Factory Reset Incompleteness
 
    Research into IoT protocols has shown that hardware factory resets
@@ -715,20 +800,10 @@ Internet-Draft             SETTLE Requirements             February 2026
    manufacturer or stolen batch of private keys allows an attacker to
    masquerade as a legitimate device.  UAs SHOULD support mechanisms to
    constrain manufacturer trust to specific scopes or require secondary
-   local validation.
-
-
-
-
-
-
-
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 13]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
+   local validation.  Manufacturer Usage Description [RFC8520] is
+   complementary here: it limits what a device may talk to once it has
+   joined, which bounds the damage a compromised identity can do, but it
+   does not help establish trust in the first place.
 
 8.7.  OS Isolation of DHCP Configuration
 
@@ -756,6 +831,17 @@ Internet-Draft             SETTLE Requirements             February 2026
    In accordance with [RFC6973], privacy vulnerabilities in local
    networks must be considered.
 
+
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 15]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
    *Device Tracking:* Utilizing MAC addresses or static hardware
    identifiers in Local Device Names (e.g., mDNS broadcasts) allows
    passive observers on the local network to track device presence and
@@ -778,14 +864,6 @@ Internet-Draft             SETTLE Requirements             February 2026
    *Discovery-Channel Metadata:* Anything placed in a discovery record
    is readable by every listener on the link, whether or not it is
    cryptographically protected.  A certificate fingerprint or an
-
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 14]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
-
    Authentication Domain Name advertised in a TXT record or SVCB
    parameter [I-D.liu-add-dnssd-edns] is a stable identifier and defeats
    the rotating identifiers required by REQ-NAME-05 for portable
@@ -812,6 +890,14 @@ Internet-Draft             SETTLE Requirements             February 2026
    handshake interface, modeled on the QUIC handshake interface in the
    Go standard library, that yields handshake flights as datagram
    batches instead of owning a socket.  The accompanying example splits
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 16]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
    each flight across DNS-SD TXT keys, publishes it as a record update,
    and attaches the completed connection to a unicast UDP socket once
    the handshake finishes.  The example authenticates with a pre-shared
@@ -830,17 +916,6 @@ Internet-Draft             SETTLE Requirements             February 2026
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
-
-
-
-
-
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 15]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
 
    [RFC3927]  Cheshire, S., Aboba, B., and E. Guttman, "Dynamic
               Configuration of IPv4 Link-Local Addresses", RFC 3927,
@@ -869,6 +944,16 @@ Internet-Draft             SETTLE Requirements             February 2026
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/info/rfc8174>.
 
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 17]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
    [RFC8375]  Pfister, P. and T. Lemon, "Special-Use Domain
               'home.arpa.'", RFC 8375, DOI 10.17487/RFC8375, May 2018,
               <https://www.rfc-editor.org/info/rfc8375>.
@@ -890,14 +975,6 @@ Internet-Draft             SETTLE Requirements             February 2026
               RFC 9525, DOI 10.17487/RFC9525, November 2023,
               <https://www.rfc-editor.org/info/rfc9525>.
 
-
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 16]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
-
 13.  Informative References
 
    [RFC2693]  Ellison, C., Frantz, B., Lampson, B., Rivest, R., Thomas,
@@ -908,6 +985,40 @@ Internet-Draft             SETTLE Requirements             February 2026
    [RFC3514]  Bellovin, S., "The Security Flag in the IPv4 Header",
               RFC 3514, DOI 10.17487/RFC3514, April 2003,
               <https://www.rfc-editor.org/info/rfc3514>.
+
+   [RFC4255]  Schlyter, J. and W. Griffin, "Using DNS to Securely
+              Publish Secure Shell (SSH) Key Fingerprints", RFC 4255,
+              DOI 10.17487/RFC4255, January 2006,
+              <https://www.rfc-editor.org/info/rfc4255>.
+
+   [RFC6189]  Zimmermann, P., Johnston, A., Ed., and J. Callas, "ZRTP:
+              Media Path Key Agreement for Unicast Secure RTP",
+              RFC 6189, DOI 10.17487/RFC6189, April 2011,
+              <https://www.rfc-editor.org/info/rfc6189>.
+
+   [RFC6698]  Hoffman, P. and J. Schlyter, "The DNS-Based Authentication
+              of Named Entities (DANE) Transport Layer Security (TLS)
+              Protocol: TLSA", RFC 6698, DOI 10.17487/RFC6698, August
+              2012, <https://www.rfc-editor.org/info/rfc6698>.
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 18]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
+   [RFC7250]  Wouters, P., Ed., Tschofenig, H., Ed., Gilmore, J.,
+              Weiler, S., and T. Kivinen, "Using Raw Public Keys in
+              Transport Layer Security (TLS) and Datagram Transport
+              Layer Security (DTLS)", RFC 7250, DOI 10.17487/RFC7250,
+              June 2014, <https://www.rfc-editor.org/info/rfc7250>.
+
+   [RFC7435]  Dukhovni, V., "Opportunistic Security: Some Protection
+              Most of the Time", RFC 7435, DOI 10.17487/RFC7435,
+              December 2014, <https://www.rfc-editor.org/info/rfc7435>.
 
    [RFC6973]  Cooper, A., Tschofenig, H., Aboba, B., Peterson, J.,
               Morris, J., Hansen, M., and R. Smith, "Privacy
@@ -949,7 +1060,8 @@ Internet-Draft             SETTLE Requirements             February 2026
 
 
 
-Sweet & De Backker       Expires 25 August 2026                [Page 17]
+
+Sweet & De Backker       Expires 25 August 2026                [Page 19]
 
 Internet-Draft             SETTLE Requirements             February 2026
 
@@ -959,20 +1071,71 @@ Internet-Draft             SETTLE Requirements             February 2026
               RFC 7942, DOI 10.17487/RFC7942, July 2016,
               <https://www.rfc-editor.org/info/rfc7942>.
 
+   [RFC8520]  Lear, E., Droms, R., and D. Romascanu, "Manufacturer Usage
+              Description Specification", RFC 8520,
+              DOI 10.17487/RFC8520, March 2019,
+              <https://www.rfc-editor.org/info/rfc8520>.
+
+   [RFC8738]  Shoemaker, R.B., "Automated Certificate Management
+              Environment (ACME) IP Identifier Validation Extension",
+              RFC 8738, DOI 10.17487/RFC8738, February 2020,
+              <https://www.rfc-editor.org/info/rfc8738>.
+
    [RFC8882]  Huitema, C. and D. Kaiser, "DNS-Based Service Discovery
               (DNS-SD) Privacy and Security Requirements", RFC 8882,
               DOI 10.17487/RFC8882, September 2020,
               <https://www.rfc-editor.org/info/rfc8882>.
+
+   [RFC8994]  Eckert, T., Ed., Behringer, M., Ed., and S. Bjarnason, "An
+              Autonomic Control Plane (ACP)", RFC 8994,
+              DOI 10.17487/RFC8994, May 2021,
+              <https://www.rfc-editor.org/info/rfc8994>.
 
    [RFC8995]  Pritikin, M., Richardson, M., Eckert, T., Behringer, M.,
               and K. Watsen, "Bootstrapping Remote Secure Key
               Infrastructure (BRSKI)", RFC 8995, DOI 10.17487/RFC8995,
               May 2021, <https://www.rfc-editor.org/info/rfc8995>.
 
+   [RFC9140]  Aura, T., Sethi, M., and A. Peltonen, "Nimble Out-of-Band
+              Authentication for EAP (EAP-NOOB)", RFC 9140,
+              DOI 10.17487/RFC9140, December 2021,
+              <https://www.rfc-editor.org/info/rfc9140>.
+
+   [RFC9383]  Taubert, T. and C. A. Wood, "SPAKE2+, an Augmented
+              Password-Authenticated Key Exchange (PAKE) Protocol",
+              RFC 9383, DOI 10.17487/RFC9383, September 2023,
+              <https://www.rfc-editor.org/info/rfc9383>.
+
    [RFC9460]  Schwartz, B., Bishop, M., and E. Nygren, "Service Binding
               and Parameter Specification via the DNS (SVCB and HTTPS
               Resource Records)", RFC 9460, DOI 10.17487/RFC9460,
               November 2023, <https://www.rfc-editor.org/info/rfc9460>.
+
+
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 20]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
+   [RFC9462]  Pauly, T., Kinnear, E., Wood, C. A., McManus, P., and T.
+              Jensen, "Discovery of Designated Resolvers", RFC 9462,
+              DOI 10.17487/RFC9462, November 2023,
+              <https://www.rfc-editor.org/info/rfc9462>.
+
+   [RFC9528]  Selander, G., Preuß Mattsson, J., and F. Palombini,
+              "Ephemeral Diffie-Hellman Over COSE (EDHOC)", RFC 9528,
+              DOI 10.17487/RFC9528, March 2024,
+              <https://www.rfc-editor.org/info/rfc9528>.
+
+   [RFC9665]  Lemon, T. and S. Cheshire, "Service Registration Protocol
+              for DNS-Based Service Discovery", RFC 9665,
+              DOI 10.17487/RFC9665, June 2025,
+              <https://www.rfc-editor.org/info/rfc9665>.
 
    [RFC9849]  Rescorla, E., Oku, K., Sullivan, N., and C. A. Wood, "TLS
               Encrypted Client Hello", RFC 9849, DOI 10.17487/RFC9849,
@@ -1002,17 +1165,18 @@ Internet-Draft             SETTLE Requirements             February 2026
    [I-D.wing-settle-referee]
               Wing, D., "A Referee to Authenticate Servers in Local
               Domains", Work in Progress, Internet-Draft, draft-wing-
-
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 18]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
-
               settle-referee-00, January 2025,
               <https://datatracker.ietf.org/doc/html/draft-wing-settle-
               referee>.
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 21]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
 
    [I-D.wing-settle-public-key-hash]
               Wing, D., "Public Key Hash for Local Domains", Work in
@@ -1054,24 +1218,21 @@ Internet-Draft             SETTLE Requirements             February 2026
               <https://datatracker.ietf.org/doc/html/draft-ietf-uta-
               tls13-iot-profile>.
 
-
-
-
-
-
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 19]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
-
    [I-D.housley-lamps-macaddress-on]
               Housley, R., "MAC Address in X.509 Certificate otherName",
               Work in Progress, Internet-Draft, draft-housley-lamps-
               macaddress-on, 2026,
               <https://datatracker.ietf.org/doc/html/draft-housley-
               lamps-macaddress-on>.
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 22]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
 
    [W3C.SecureContexts]
               West, M., "Secure Contexts", W3C Candidate Recommendation 
@@ -1093,6 +1254,42 @@ Internet-Draft             SETTLE Requirements             February 2026
               <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
               pake>.
 
+   [W3C.WebTransport]
+              W3C, "WebTransport", W3C Working Draft, 2026,
+              <https://www.w3.org/TR/webtransport/>.
+
+   [Duckling] Stajano, F. and R. Anderson, "The Resurrecting Duckling:
+              Security Issues for Ad-hoc Wireless Networks", 7th
+              International Workshop on Security Protocols, 1999,
+              <https://www.cl.cam.ac.uk/~fms27/papers/1999-StajanoAnd-
+              duckling.pdf>.
+
+   [TalkingToStrangers]
+              Balfanz, D., Smetters, D. K., Stewart, P., and H. C. Wong,
+              "Talking to Strangers: Authentication in Ad-Hoc Wireless
+              Networks", Network and Distributed System Security
+              Symposium (NDSS), 2002, <https://www.ndss-
+              symposium.org/ndss2002/talking-strangers-authentication-
+              ad-hoc-wireless-networks/>.
+
+   [SeeingIsBelieving]
+              McCune, J. M., Perrig, A., and M. K. Reiter, "Seeing-is-
+              Believing: Using Camera Phones for Human-Verifiable
+              Authentication", IEEE Symposium on Security and Privacy,
+              2005, <https://ieeexplore.ieee.org/document/1425062/>.
+
+
+
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 23]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
    [I-D.huitema-dnssd-tls-privacy]
               Huitema, C. and D. Kaiser, "Private Discovery with TLS-
               ESNI", Work in Progress, Internet-Draft, draft-huitema-
@@ -1112,15 +1309,6 @@ Internet-Draft             SETTLE Requirements             February 2026
               carrying a DTLS handshake over mDNS", pion/dtls pull
               request 1094, September 2026,
               <https://github.com/pion/dtls/pull/1094>.
-
-
-
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 20]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
 
    [ZookosTriangle]
               Wilcox-O'Hearn, Z., "Names: Decentralized, Secure, Human-
@@ -1148,11 +1336,41 @@ Appendix A.  Change History
    *  REQ-NAME-05: cited RFC 8882 and the DNS-SD native private
       discovery construction.
 
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 24]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
+
    *  Added a Privacy Considerations paragraph on discovery-channel
       metadata, and a note on multicast amplification under Denial of
       Service.
 
    *  Added an Implementation Status section per RFC 7942.
+
+   *  Added prior art on device pairing research (Resurrecting Duckling,
+      Talking to Strangers, Seeing-is-Believing), EAP-NOOB (RFC 9140),
+      ZRTP short authentication strings (RFC 6189), raw public keys in
+      TLS (RFC 7250), SRP (RFC 9665), DDR (RFC 9462), the Autonomic
+      Control Plane (RFC 8994), WebTransport certificate hashes, and
+      EDHOC (RFC 9528).
+
+   *  Noted that a local ACME server can issue for literal addresses
+      using IP identifiers (RFC 8738).
+
+   *  Corrected the Matter description to cite SPAKE2+ (RFC 9383) rather
+      than SPAKE2.
+
+   *  Added DANE and SSHFP (RFC 6698, RFC 4255) to the approaches ruled
+      out, and engaged Opportunistic Security (RFC 7435) where TOFU is
+      rejected.
+
+   *  Noted MUD (RFC 8520) in Security Considerations as post-onboarding
+      scoping.
 
    February 21, 2026 - draft-ietf-settle-requirements-02
 
@@ -1171,16 +1389,18 @@ Appendix A.  Change History
    *  Hardened REQ-TRUST-02 (entropy floor set to "at least 128 bits"
       instead of "e.g.").
 
-
-
-Sweet & De Backker       Expires 25 August 2026                [Page 21]
-
-Internet-Draft             SETTLE Requirements             February 2026
-
-
    *  Upgraded REQ-TRUST-04 from SHOULD to MUST.
 
    *  Refined REQ-TRANS-04 wording for neutrality.
+
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 25]
+
+Internet-Draft             SETTLE Requirements             February 2026
+
 
    *  Split REQ-ARCH-04 into separate Authorization and Audit
       requirements.
@@ -1229,4 +1449,8 @@ Authors' Addresses
 
 
 
-Sweet & De Backker       Expires 25 August 2026                [Page 22]
+
+
+
+
+Sweet & De Backker       Expires 25 August 2026                [Page 26]
