@@ -1826,7 +1826,7 @@ li > p:last-of-type:only-child {
         <h3 id="name-confused-deputy-attacks">
 <a href="#section-8.4" class="section-number selfRef">8.4. </a><a href="#name-confused-deputy-attacks" class="section-name selfRef">Confused Deputy Attacks</a>
         </h3>
-<p id="section-8.4-1">Public websites often attempt to use the browser as a "confused deputy" to attack local network devices via Cross-Site Request Forgery (CSRF). SETTLE's requirement for mutual authentication (REQ-TRUST-05) and compatibility with Local Network Access (LNA) policies (REQ-TRANS-04) ensures devices reject unauthenticated cross-origin requests.<a href="#section-8.4-1" class="pilcrow">¶</a></p>
+<p id="section-8.4-1">Public websites often attempt to use the browser as a "confused deputy" to attack local network devices via Cross-Site Request Forgery (CSRF). The requirement for mutual authentication (REQ-TRUST-05) is what causes a device to reject an unauthenticated request, whatever its origin. Local Network Access (REQ-TRANS-04) does less than that: it asks the user whether a site may reach the local network at all, which reduces how often such a request is made but does not authenticate the ones that are.<a href="#section-8.4-1" class="pilcrow">¶</a></p>
 </section>
 <section id="section-8.5">
         <h3 id="name-factory-reset-incompletenes">
@@ -2172,13 +2172,15 @@ li > p:last-of-type:only-child {
 </li>
         <li class="normal" id="appendix-A-3.11">Noted MUD (RFC 8520) in Security Considerations as post-onboarding scoping.<a href="#appendix-A-3.11" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="appendix-A-3.12">Grouped Prior Art and Related Work into topical sub-sections and dropped the EDHOC mention (RFC 9528).<a href="#appendix-A-3.12" class="pilcrow">¶</a>
+        <li class="normal" id="appendix-A-3.12">Corrected the Confused Deputy discussion to attribute request rejection to mutual authentication rather than to LNA.<a href="#appendix-A-3.12" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="appendix-A-3.13">Split REQ-TRUST-02: the 128-bit entropy floor now applies only to OOB material that directly authenticates a key (REQ-TRUST-02a); material consumed by a PAKE or commit-and-compare ceremony instead requires bounded online guessing (REQ-TRUST-02b). Reworded the Matter bullet to match.<a href="#appendix-A-3.13" class="pilcrow">¶</a>
+        <li class="normal" id="appendix-A-3.13">Grouped Prior Art and Related Work into topical sub-sections and dropped the EDHOC mention (RFC 9528).<a href="#appendix-A-3.13" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="appendix-A-3.14">Rewrote REQ-TRANS-04 against the current WICG Local Network Access permission-prompt model, downgraded it to SHOULD, and added the WICG.LNA reference.<a href="#appendix-A-3.14" class="pilcrow">¶</a>
+        <li class="normal" id="appendix-A-3.14">Split REQ-TRUST-02: the 128-bit entropy floor now applies only to OOB material that directly authenticates a key (REQ-TRUST-02a); material consumed by a PAKE or commit-and-compare ceremony instead requires bounded online guessing (REQ-TRUST-02b). Reworded the Matter bullet to match.<a href="#appendix-A-3.14" class="pilcrow">¶</a>
 </li>
-        <li class="normal" id="appendix-A-3.15">Implementation Status: disclosed the editor's pion affiliation and pinned the pion citation to a commit.<a href="#appendix-A-3.15" class="pilcrow">¶</a>
+        <li class="normal" id="appendix-A-3.15">Rewrote REQ-TRANS-04 against the current WICG Local Network Access permission-prompt model, downgraded it to SHOULD, and added the WICG.LNA reference.<a href="#appendix-A-3.15" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-3.16">Implementation Status: disclosed the editor's pion affiliation and pinned the pion citation to a commit.<a href="#appendix-A-3.16" class="pilcrow">¶</a>
 </li>
       </ul>
 <p id="appendix-A-4">February 21, 2026 - draft-ietf-settle-requirements-02<a href="#appendix-A-4" class="pilcrow">¶</a></p>

@@ -808,10 +808,12 @@ Internet-Draft             SETTLE Requirements             February 2026
 
    Public websites often attempt to use the browser as a "confused
    deputy" to attack local network devices via Cross-Site Request
-   Forgery (CSRF).  SETTLE's requirement for mutual authentication (REQ-
-   TRUST-05) and compatibility with Local Network Access (LNA) policies
-   (REQ-TRANS-04) ensures devices reject unauthenticated cross-origin
-   requests.
+   Forgery (CSRF).  The requirement for mutual authentication (REQ-
+   TRUST-05) is what causes a device to reject an unauthenticated
+   request, whatever its origin.  Local Network Access (REQ-TRANS-04)
+   does less than that: it asks the user whether a site may reach the
+   local network at all, which reduces how often such a request is made
+   but does not authenticate the ones that are.
 
 8.5.  Factory Reset Incompleteness
 
@@ -831,8 +833,6 @@ Internet-Draft             SETTLE Requirements             February 2026
    complementary here: it limits what a device may talk to once it has
    joined, which bounds the damage a compromised identity can do, but it
    does not help establish trust in the first place.
-
-
 
 
 
@@ -1387,11 +1387,11 @@ Internet-Draft             SETTLE Requirements             February 2026
    *  Noted MUD (RFC 8520) in Security Considerations as post-onboarding
       scoping.
 
+   *  Corrected the Confused Deputy discussion to attribute request
+      rejection to mutual authentication rather than to LNA.
+
    *  Grouped Prior Art and Related Work into topical sub-sections and
       dropped the EDHOC mention (RFC 9528).
-
-
-
 
 
 
