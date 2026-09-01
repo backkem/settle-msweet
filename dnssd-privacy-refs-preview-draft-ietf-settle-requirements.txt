@@ -1126,8 +1126,7 @@ Appendix A.  Change History
 
    [ RFC Editor: This section to be deleted before RFC publication ]
 
-   September 1, 2026 - draft-ietf-settle-requirements-03 (work in
-   progress)
+   Unreleased - to be folded into the next revision
 
    *  Added prior art on private DNS-SD with Encrypted SNI (draft-
       huitema-dnssd-tls-privacy, RFC 8882) and on advertising security
@@ -1170,6 +1169,7 @@ Appendix A.  Change History
    *  Upgraded REQ-TRUST-04 from SHOULD to MUST.
 
    *  Refined REQ-TRANS-04 wording for neutrality.
+
 
 
 
