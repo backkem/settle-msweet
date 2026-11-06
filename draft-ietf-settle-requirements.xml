@@ -179,7 +179,7 @@
           <dd>Device certificates MUST populate the Subject Alternative Name (SAN) extension. User Agents MUST verify these identities in accordance with <xref target="RFC9525"/> and IoT TLS profiles <xref target="I-D.ietf-uta-tls13-iot-profile"/>.</dd>
 
           <dt>REQ-TRANS-04: Browser Policy Compatibility</dt>
-          <dd>Browsers are introducing Local Network Access (LNA) policies that gate requests to local network addresses behind a user permission prompt <xref target="WICG.LNA"/>. SETTLE SHOULD allow Devices to serve certificates that validate under its trust model, so that a connection permitted by LNA also yields a Secure Context. LNA is a single-vendor design still in flux, so this document states no MUST against it.</dd>
+          <dd>SETTLE MUST work within browser Local Network Access (LNA) policies <xref target="WICG.LNA"/>. Devices MUST be able to serve certificates that validate under SETTLE's trust model, so that a connection permitted under LNA also yields a Secure Context. SETTLE SHOULD make the trust it establishes available to User Agents as an input to LNA decisions, so that browsers can reduce redundant prompts for Devices the User has already verified, without weakening LNA's protection against unauthorized origins.</dd>
 
           <dt>REQ-TRANS-05: Interoperability and Agility</dt>
           <dd>SETTLE MUST support cryptographic agility to accommodate future algorithm deprecations and ensure interoperability between independent vendor implementations.</dd>
@@ -214,7 +214,7 @@
       </section>
 
       <section title="Confused Deputy Attacks">
-        <t>Public websites often attempt to use the browser as a "confused deputy" to attack local network devices via Cross-Site Request Forgery (CSRF). Local Network Access (REQ-TRANS-04) asks the user whether a site may reach the local network at all, which reduces how often such a request is made but does not authenticate the ones that are. Rejecting an unauthenticated request, whatever its origin, requires the Device to verify a Client Identity.</t>
+        <t>Public websites often attempt to use the browser as a "confused deputy" to attack local network devices via Cross-Site Request Forgery (CSRF). Local Network Access (REQ-TRANS-04) addresses this directly by requiring the User's permission before a public site can reach the local network. Verifying a Client Identity complements it, letting a Device also reject permitted requests that are not authenticated.</t>
       </section>
 
       <section title="Factory Reset Incompleteness">
