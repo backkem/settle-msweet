@@ -1524,7 +1524,7 @@ li > p:last-of-type:only-child {
         </h3>
 <span class="break"></span><dl class="dlParallel" id="section-4.1-1">
           <dt id="section-4.1-1.1">REQ-NAME-01: Unique Identifiers</dt>
-          <dd style="margin-left: 1.5em" id="section-4.1-1.2">SETTLE MUST provide a mechanism to assign unique Device Names. A Device Name MUST be unique within its discovery scope, such as the local link, and SHOULD be globally unique. Security does not rely on global uniqueness: independently administered networks may reuse a name, and which authority may assert it is governed by REQ-VERIFY-04. To prevent collisions, names SHOULD incorporate high-entropy device-specific data, such as MAC addresses <span>[<a href="#I-D.housley-lamps-macaddress-on" class="cite xref">I-D.housley-lamps-macaddress-on</a>]</span> or public key hashes <span>[<a href="#I-D.wing-settle-public-key-hash" class="cite xref">I-D.wing-settle-public-key-hash</a>]</span>.<a href="#section-4.1-1.2" class="pilcrow">¶</a>
+          <dd style="margin-left: 1.5em" id="section-4.1-1.2">SETTLE MUST provide a mechanism to assign unique Device Names. A Device Name MUST be unique within its discovery scope, such as the local link, and SHOULD be globally unique. Independently administered networks may still reuse a name; SETTLE MUST ensure that such a collision does not let one Device impersonate another or undermine trust relationships already established. To prevent collisions, names SHOULD incorporate high-entropy device-specific data, such as MAC addresses <span>[<a href="#I-D.housley-lamps-macaddress-on" class="cite xref">I-D.housley-lamps-macaddress-on</a>]</span> or public key hashes <span>[<a href="#I-D.wing-settle-public-key-hash" class="cite xref">I-D.wing-settle-public-key-hash</a>]</span>.<a href="#section-4.1-1.2" class="pilcrow">¶</a>
 </dd>
           <dd class="break"></dd>
 <dt id="section-4.1-1.3">REQ-NAME-02: Local Namespace Compatibility</dt>
@@ -1563,7 +1563,7 @@ li > p:last-of-type:only-child {
 </dd>
           <dd class="break"></dd>
 <dt id="section-4.2-1.7">REQ-VERIFY-04: Dynamic Local Trust Store</dt>
-          <dd style="margin-left: 1.5em" id="section-4.2-1.8">User Agents MUST support a Local Trust Anchor. User Agents already accept locally installed WebPKI trust anchors, but those are trusted for every name. A Local Trust Anchor MUST instead be limited to the local namespaces of REQ-NAME-02, for example through X.509 name constraints <span>[<a href="#RFC5280" class="cite xref">RFC5280</a>]</span>, so that installing one confers no authority over global DNS names.<a href="#section-4.2-1.8" class="pilcrow">¶</a>
+          <dd style="margin-left: 1.5em" id="section-4.2-1.8">User Agents MUST support a Local Trust Anchor. Depending on the trust store, a locally installed WebPKI trust anchor can confer authority over any DNS name. A Local Trust Anchor MUST instead be limited to the local namespaces of REQ-NAME-02, and the User Agent MUST enforce that limit itself, since path validation may ignore name constraints carried in a self-signed trust anchor <span>[<a href="#RFC6818" class="cite xref">RFC6818</a>]</span>.<a href="#section-4.2-1.8" class="pilcrow">¶</a>
 </dd>
         <dd class="break"></dd>
 </dl>
@@ -1647,7 +1647,7 @@ li > p:last-of-type:only-child {
         <h3 id="name-factory-reset-incompletenes">
 <a href="#section-5.5" class="section-number selfRef">5.5. </a><a href="#name-factory-reset-incompletenes" class="section-name selfRef">Factory Reset Incompleteness</a>
         </h3>
-<p id="section-5.5-1">Research into IoT protocols has shown that hardware factory resets frequently fail to clear all administrative fabrics or ACLs, leaving devices vulnerable to prior owners. REQ-ARCH-03 mandates that a factory reset MUST completely destroy all cryptographic material linking the device to prior trust domains.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
+<p id="section-5.5-1">Research into IoT protocols has shown that hardware factory resets frequently fail to clear all administrative fabrics or ACLs, leaving devices vulnerable to prior owners. REQ-ARCH-03 mandates that a factory reset MUST completely destroy all cryptographic material linking the device to prior local trust domains.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
 </section>
 <section id="section-5.6">
         <h3 id="name-supply-chain-attacks">
@@ -1800,6 +1800,10 @@ li > p:last-of-type:only-child {
 <dt id="RFC3514">[RFC3514]</dt>
       <dd>
 <span class="refAuthor">Bellovin, S.</span>, <span class="refTitle">"The Security Flag in the IPv4 Header"</span>, <span class="seriesInfo">RFC 3514</span>, <span class="seriesInfo">DOI 10.17487/RFC3514</span>, <time datetime="2003-04" class="refDate">April 2003</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc3514">https://www.rfc-editor.org/info/rfc3514</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6818">[RFC6818]</dt>
+      <dd>
+<span class="refAuthor">Yee, P.</span>, <span class="refTitle">"Updates to the Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile"</span>, <span class="seriesInfo">RFC 6818</span>, <span class="seriesInfo">DOI 10.17487/RFC6818</span>, <time datetime="2013-01" class="refDate">January 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6818">https://www.rfc-editor.org/info/rfc6818</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC6973">[RFC6973]</dt>
       <dd>

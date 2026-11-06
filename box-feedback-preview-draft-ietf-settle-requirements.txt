@@ -287,12 +287,13 @@ Internet-Draft             SETTLE Requirements              October 2026
    REQ-NAME-01: Unique Identifiers  SETTLE MUST provide a mechanism to
       assign unique Device Names.  A Device Name MUST be unique within
       its discovery scope, such as the local link, and SHOULD be
-      globally unique.  Security does not rely on global uniqueness:
-      independently administered networks may reuse a name, and which
-      authority may assert it is governed by REQ-VERIFY-04.  To prevent
-      collisions, names SHOULD incorporate high-entropy device-specific
-      data, such as MAC addresses [I-D.housley-lamps-macaddress-on] or
-      public key hashes [I-D.wing-settle-public-key-hash].
+      globally unique.  Independently administered networks may still
+      reuse a name; SETTLE MUST ensure that such a collision does not
+      let one Device impersonate another or undermine trust
+      relationships already established.  To prevent collisions, names
+      SHOULD incorporate high-entropy device-specific data, such as MAC
+      addresses [I-D.housley-lamps-macaddress-on] or public key hashes
+      [I-D.wing-settle-public-key-hash].
 
    REQ-NAME-02: Local Namespace Compatibility  Device Names MUST utilize
       standardized namespaces reserved for local or non-DNS use to
@@ -332,7 +333,6 @@ Internet-Draft             SETTLE Requirements              October 2026
 
 
 
-
 Sweet & De Backker        Expires 6 April 2027                  [Page 6]
 
 Internet-Draft             SETTLE Requirements              October 2026
@@ -346,12 +346,12 @@ Internet-Draft             SETTLE Requirements              October 2026
       user-facing Device Name.
 
    REQ-VERIFY-04: Dynamic Local Trust Store  User Agents MUST support a
-      Local Trust Anchor.  User Agents already accept locally installed
-      WebPKI trust anchors, but those are trusted for every name.  A
-      Local Trust Anchor MUST instead be limited to the local namespaces
-      of REQ-NAME-02, for example through X.509 name constraints
-      [RFC5280], so that installing one confers no authority over global
-      DNS names.
+      Local Trust Anchor.  Depending on the trust store, a locally
+      installed WebPKI trust anchor can confer authority over any DNS
+      name.  A Local Trust Anchor MUST instead be limited to the local
+      namespaces of REQ-NAME-02, and the User Agent MUST enforce that
+      limit itself, since path validation may ignore name constraints
+      carried in a self-signed trust anchor [RFC6818].
 
 4.3.  Protocol and Transport (REQ-TRANS)
 
@@ -464,7 +464,7 @@ Internet-Draft             SETTLE Requirements              October 2026
    frequently fail to clear all administrative fabrics or ACLs, leaving
    devices vulnerable to prior owners.  REQ-ARCH-03 mandates that a
    factory reset MUST completely destroy all cryptographic material
-   linking the device to prior trust domains.
+   linking the device to prior local trust domains.
 
 5.6.  Supply Chain Attacks
 
@@ -707,6 +707,11 @@ Internet-Draft             SETTLE Requirements              October 2026
               RFC 3514, DOI 10.17487/RFC3514, April 2003,
               <https://www.rfc-editor.org/info/rfc3514>.
 
+   [RFC6818]  Yee, P., "Updates to the Internet X.509 Public Key
+              Infrastructure Certificate and Certificate Revocation List
+              (CRL) Profile", RFC 6818, DOI 10.17487/RFC6818, January
+              2013, <https://www.rfc-editor.org/info/rfc6818>.
+
    [RFC6973]  Cooper, A., Tschofenig, H., Aboba, B., Peterson, J.,
               Morris, J., Hansen, M., and R. Smith, "Privacy
               Considerations for Internet Protocols", RFC 6973,
@@ -718,17 +723,17 @@ Internet-Draft             SETTLE Requirements              October 2026
               DOI 10.17487/RFC7030, October 2013,
               <https://www.rfc-editor.org/info/rfc7030>.
 
-   [RFC8314]  Moore, K. and C. Newman, "Cleartext Considered Obsolete:
-              Use of Transport Layer Security (TLS) for Email Submission
-              and Access", RFC 8314, DOI 10.17487/RFC8314, January 2018,
-              <https://www.rfc-editor.org/info/rfc8314>.
-
 
 
 Sweet & De Backker        Expires 6 April 2027                 [Page 13]
 
 Internet-Draft             SETTLE Requirements              October 2026
 
+
+   [RFC8314]  Moore, K. and C. Newman, "Cleartext Considered Obsolete:
+              Use of Transport Layer Security (TLS) for Email Submission
+              and Access", RFC 8314, DOI 10.17487/RFC8314, January 2018,
+              <https://www.rfc-editor.org/info/rfc8314>.
 
    [RFC8366]  Watsen, K., Richardson, M., Pritikin, M., and T. Eckert,
               "A Voucher Artifact for Bootstrapping Protocols",
@@ -770,11 +775,6 @@ Internet-Draft             SETTLE Requirements              October 2026
               CR-secure-contexts, September 2021,
               <https://w3c.github.io/webappsec-secure-contexts/>.
 
-   [ZookosTriangle]
-              Wilcox-O'Hearn, Z., "Names: Decentralized, Secure, Human-
-              Meaningful: Choose Two", 2001,
-              <https://en.wikipedia.org/wiki/Zooko%27s_triangle>.
-
 
 
 
@@ -785,6 +785,11 @@ Sweet & De Backker        Expires 6 April 2027                 [Page 14]
 
 Internet-Draft             SETTLE Requirements              October 2026
 
+
+   [ZookosTriangle]
+              Wilcox-O'Hearn, Z., "Names: Decentralized, Secure, Human-
+              Meaningful: Choose Two", 2001,
+              <https://en.wikipedia.org/wiki/Zooko%27s_triangle>.
 
 Appendix A.  Prior Art and Related Work
 
@@ -826,6 +831,17 @@ Appendix A.  Prior Art and Related Work
       Set Intersection (PSI) [PrivateDrop] demonstrates that privacy-
       preserving mutual discovery is feasible with sub-second latency.
 
+
+
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 15]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
    *  *SDSI/SPKI:* Simple Distributed Security Infrastructure [RFC2693]
       proposed a decentralized PKI binding authorizations directly to
       keys.  While conceptually aligned with local trust, modern web
@@ -834,13 +850,6 @@ Appendix A.  Prior Art and Related Work
    *  *Local Public Key Hashes:* Approaches that embed public key hashes
       into local domain names [I-D.wing-settle-public-key-hash] offer
       self-certifying namespaces but sacrifice human-readability.
-
-
-
-Sweet & De Backker        Expires 6 April 2027                 [Page 15]
-
-Internet-Draft             SETTLE Requirements              October 2026
-
 
    *  *Local Referees and ACME:* Architectures utilizing a central local
       hub to authenticate servers [I-D.wing-settle-referee] or issue
@@ -865,15 +874,6 @@ Authors' Addresses
 
    Michiel De Backker (editor)
    Email: mail@backkem.me
-
-
-
-
-
-
-
-
-
 
 
 
