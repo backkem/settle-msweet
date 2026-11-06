@@ -286,13 +286,13 @@ Internet-Draft             SETTLE Requirements              October 2026
 
    REQ-NAME-01: Unique Identifiers  SETTLE MUST provide a mechanism to
       assign unique Device Names.  A Device Name MUST be unique within
-      the local network and SHOULD be globally unique.  Browsers
-      identify an origin by its name, so two networks that both use
-      "router.home.arpa" would let state such as cookies and storage
-      carry over between unrelated Devices.  To prevent collisions,
-      names SHOULD incorporate high-entropy device-specific data, such
-      as MAC addresses [I-D.housley-lamps-macaddress-on] or public key
-      hashes [I-D.wing-settle-public-key-hash].
+      its discovery scope, such as the local link.  Uniqueness beyond
+      that scope is not assumed: as with private IP addresses,
+      independently administered networks may reuse a name, and which
+      authority may assert it is governed by REQ-VERIFY-04.  To prevent
+      collisions, names SHOULD incorporate high-entropy device-specific
+      data, such as MAC addresses [I-D.housley-lamps-macaddress-on] or
+      public key hashes [I-D.wing-settle-public-key-hash].
 
    REQ-NAME-02: Local Namespace Compatibility  Device Names MUST utilize
       standardized namespaces reserved for local or non-DNS use to
@@ -305,7 +305,7 @@ Internet-Draft             SETTLE Requirements              October 2026
 
    REQ-NAME-04: Standardized Discovery  SETTLE MUST utilize standard
       local discovery protocols, such as DNS-Based Service Discovery
-      (DNS-SD) [RFC6763], including Unicast Local Discovery (ULD)
+      (DNS-SD) [RFC6763], Unicast Local Discovery (ULD)
       [I-D.ietf-dnssd-uld], or Captive Portal APIs [RFC8910], to locate
       Devices prior to authentication.
 
