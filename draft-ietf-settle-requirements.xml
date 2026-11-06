@@ -38,11 +38,11 @@
 
   <middle>
     <section title="Introduction">
-      <t>Local networks have historically used a mix of encrypted and unencrypted communications with no common method to establish trust. Access is provided to those who have the Wi-Fi password or an Ethernet cable, and the connected device simply trusts the information provided to it by the DHCP service on that network. In contrast, the Internet increasingly uses encrypted communications with a well-regulated system of Certificate Authorities, Domain Name Providers, Address Registries, and distributed Domain Name Services that form the basis of trust on the "modern web."</t>
+      <t>Local networks have historically used a mix of encrypted and unencrypted communications with no common method to establish trust. Access is provided to those who have the Wi-Fi password or an Ethernet cable, and the connected device simply trusts the information provided to it by the DHCP service or Router Advertisements on that network. In contrast, the Internet increasingly uses encrypted communications with a well-regulated system of Certificate Authorities, Domain Name Providers, Address Registries, and distributed Domain Name Services that form the basis of trust on the "modern web."</t>
 
       <t>With the advent of HTTPS everywhere, browsers disadvantage web services using unencrypted communications by requiring a Secure Context for features such as Direct Sockets, Geolocation, Service Workers, Web Bluetooth, WebCrypto, WebTransport, and WebRTC. The concept of "Limited Domains" <xref target="RFC8799"/> encapsulates these local, constrained environments, but existing web security models struggle to adapt to them. Furthermore, modern browser security models, such as Local Network Access (LNA), restrict public websites from making requests to private IP addresses without explicit secure contexts and user permissions.</t>
 
-      <t>Existing deployments of TLS on local networks typically use "self-signed" X.509 certificates that lack the endorsement of a trusted party, relying instead on Trust on First Use (TOFU) mechanisms. Because the client User Agent lacks a cryptographic trust anchor for the local device, it presents a "scary" certificate warning. Users frequently disregard these warnings, leading to warning fatigue and leaving them vulnerable to active interception. Conversely, network devices are unable to determine the trustworthiness of the local network, humorous solutions such as the "evil bit" from <xref target="RFC3514"/> aside.</t>
+      <t>Existing deployments of TLS on local networks typically use "self-signed" X.509 certificates that lack the endorsement of a trusted party, relying instead on Trust on First Use (TOFU) mechanisms. Because the client User Agent lacks a cryptographic trust anchor for the Infrastructure Device, it presents a "scary" certificate warning. Users frequently disregard these warnings, leading to warning fatigue and leaving them vulnerable to active interception. Conversely, network devices are unable to determine the trustworthiness of the local network, humorous solutions such as the "evil bit" from <xref target="RFC3514"/> aside.</t>
 
       <t>This document defines common terminology and requirements for discovering, identifying, validating, and establishing secure connections with local network devices without relying on Trust On First Use (TOFU) or continuous Internet connectivity. Importantly, nothing here will help determine whether a network or network device is actually trustworthy, merely that it possesses a verifiable identity.</t>
     </section>
@@ -97,6 +97,9 @@
 	<dt>Protected Communications:</dt>
 	<dd>Communications between two Devices whose Identities have been verified and use methods such as cryptography to protect any data from eavesdropping or undetected modification.</dd>
 
+        <dt>Referee (Local Manager):</dt>
+        <dd>An Infrastructure Device that is designated as the Local Certificate Authority/trust broker, transitioning a mesh of unverified devices into a hub-and-spoke trust topology. [QUESTION: Is the latter a hard requirement or just how current referees are defined/implemented?]</dd>
+
         <dt>Secure Context:</dt>
         <dd>An environment meeting the minimum standards of authentication and confidentiality as defined by the W3C Secure Contexts specification <xref target="W3C.SecureContexts"/>.</dd>
 
@@ -106,9 +109,6 @@
         <dt>Trust On First Use (TOFU):</dt>
         <dd>An approach where a Client Device and/or UA accepts the first Cryptographic Identity presented by an Infrastructure Device or Origin Server. The identity is sometimes confirmed by an End User before acceptance.</dd>
 
-        <dt>Referee (Local Manager):</dt>
-        <dd>An Infrastructure Device that is designated as the Local Certificate Authority/trust broker, transitioning a mesh of unverified devices into a hub-and-spoke trust topology. [QUESTION: Is the latter a hard requirement or just how current referees are defined/implemented?]</dd>
-
         <dt>User Agent (UA):</dt>
         <dd>A client program that initiates a request to an Origin Server <xref target="RFC9110"/>, e.g., a web browser.</dd>
 
@@ -117,7 +117,7 @@
 
 
     <section title="Overview and Goals">
-      <t>SEcure access To Tls Local rEsources (SETTLE) <xref target="SETTLE" /> is concerned with enabling Protected Communications within any Zero-Trust Local Area Network. Protected Communications typically are implemented using of TLS <xref target="RFC9846"/> with X.509 certificates <xref target="RFC5280"/> signed by a known Trust Anchor. Importantly, SETTLE does not deal with the notion of trustworthiness (authentication, authorization, access control, and/or attestation) or Users but instead is focused on the more basic issues of Device Identity verification and the use of a Local Certificate Authority and Trust Anchor to permit local autonomous operation without an active connection to the Internet.</t>
+      <t>SEcure access To Tls Local rEsources (SETTLE) <xref target="SETTLE" /> is concerned with enabling Protected Communications within any Zero-Trust Local Area Network. Protected Communications typically are implemented using TLS <xref target="RFC9846"/> with X.509 certificates <xref target="RFC5280"/> signed by a known Trust Anchor. Importantly, SETTLE does not deal with the notion of trustworthiness (authentication, authorization, access control, and/or attestation) or Users but instead is focused on the more basic issues of Device Identity verification and the use of a Local Certificate Authority and Trust Anchor to permit local autonomous operation without an active connection to the Internet.</t>
 
       <t>The goals of SETTLE include:</t>
 
