@@ -74,7 +74,7 @@
         <dd>A Cryptographic Identifier bound to a specific Device. This may be derived from a hardware manufacturer root, e.g., Initial Device Identifier, IDevID <xref target="IEEE.802.1AR"/>, or locally generated value.</dd>
 
         <dt>Device Name:</dt>
-        <dd>A DNS or mDNS label for a Device. [MOVE THIS: It MUST be locally unique, and SHOULD be globally unique to prevent collisions.]</dd>
+        <dd>A DNS or mDNS label for a Device.</dd>
 
         <dt>Infrastructure Device:</dt>
         <dd>A Device providing a service on the local network, e.g., a printer, a router, an IoT hub.</dd>
@@ -135,7 +135,7 @@
       <section title="Naming and Discovery (REQ-NAME)">
         <dl>
           <dt>REQ-NAME-01: Unique Identifiers</dt>
-          <dd>SETTLE MUST provide a mechanism to assign unique Device Names. To prevent collisions, names SHOULD incorporate high-entropy device-specific data, such as MAC addresses <xref target="I-D.housley-lamps-macaddress-on"/> or public key hashes <xref target="I-D.wing-settle-public-key-hash"/>.</dd>
+          <dd>SETTLE MUST provide a mechanism to assign unique Device Names. A Device Name MUST be unique within its discovery scope, such as the local link, and SHOULD be globally unique. Security does not rely on global uniqueness: independently administered networks may reuse a name, and which authority may assert it is governed by REQ-VERIFY-04. To prevent collisions, names SHOULD incorporate high-entropy device-specific data, such as MAC addresses <xref target="I-D.housley-lamps-macaddress-on"/> or public key hashes <xref target="I-D.wing-settle-public-key-hash"/>.</dd>
 
           <dt>REQ-NAME-02: Local Namespace Compatibility</dt>
           <dd>Device Names MUST utilize standardized namespaces reserved for local or non-DNS use to ensure broad client support. Valid namespaces include ".local" for mDNS <xref target="RFC6762"/>, "home.arpa." for unicast DNS <xref target="RFC8375"/>, or ".alt" <xref target="RFC9476"/>.</dd>
@@ -144,7 +144,7 @@
           <dd>Device Name resolution MUST NOT depend on the availability of global DNS infrastructure.</dd>
 
           <dt>REQ-NAME-04: Standardized Discovery</dt>
-          <dd>SETTLE MUST utilize standard local discovery protocols, such as DNS-Based Service Discovery (DNS-SD) <xref target="RFC6763"/> or Captive Portal APIs <xref target="RFC8910"/>, to locate Devices prior to authentication.</dd>
+          <dd>SETTLE MUST utilize standard local discovery protocols, such as DNS-Based Service Discovery (DNS-SD) <xref target="RFC6763"/>, Unicast Local Discovery (ULD) <xref target="I-D.ietf-dnssd-uld"/>, or Captive Portal APIs <xref target="RFC8910"/>, to locate Devices prior to authentication.</dd>
 
           <dt>REQ-NAME-05: Privacy-Preserving Discovery</dt>
           <dd>The discovery mechanism MUST prevent passive tracking of Devices or Users. SETTLE MUST NOT broadcast static identifiers (like MAC addresses or static account hashes) in plaintext if the Device is portable. SETTLE SHOULD utilize rotating identifiers or cryptographic mechanisms like Private Set Intersection (PSI).</dd>
@@ -163,7 +163,7 @@
           <dd>SETTLE SHOULD support the use of manufacturer-installed certificates (e.g., IDevID <xref target="IEEE.802.1AR"/>, <xref target="I-D.irtf-t2trg-taxonomy-manufacturer-anchors"/>). When used, SETTLE MUST define a mechanism (e.g., Vouchers <xref target="RFC8366"/>) to cryptographically bind the manufacturer-provided identity to the user-facing Device Name.</dd>
 
           <dt>REQ-VERIFY-04: Dynamic Local Trust Store</dt>
-          <dd>User Agents MUST support a Local Trust Anchor.</dd>
+          <dd>User Agents MUST support a Local Trust Anchor. User Agents already accept locally installed WebPKI trust anchors, but those are trusted for every name. A Local Trust Anchor MUST instead be limited to the local namespaces of REQ-NAME-02, for example through X.509 name constraints <xref target="RFC5280"/>, so that installing one confers no authority over global DNS names.</dd>
         </dl>
       </section>
 
@@ -182,7 +182,7 @@
           <dd>SETTLE MUST integrate seamlessly with browser Local Network Access (LNA) policies. Devices MUST be capable of serving verifiable certificates to answer preflights, enabling transparent authorization and minimizing unnecessary user friction.</dd>
 
           <dt>REQ-TRANS-05: Interoperability and Agility</dt>
-          <dd>SETTLE MUST support cryptographic agility to accommodate future algorithm deprecations and ensure interoperability between independent vendor implementations.</dd>
+          <dd>SETTLE MUST support cryptographic agility to accommodate future algorithm deprecations, including the transition to post-quantum cryptography, and ensure interoperability between independent vendor implementations. The transition also affects the OOB Ceremony (REQ-VERIFY-02): post-quantum public keys are too large to carry conveniently in a QR code, and PAKEs in current use, such as SPAKE2 <xref target="RFC9382"/>, rely on the discrete logarithm problem.</dd>
         </dl>
       </section>
 
@@ -195,7 +195,7 @@
           <dd>SETTLE MUST support a hierarchical local trust model where a mutually authenticated Referee can issue credentials to Devices.</dd>
 
           <dt>REQ-ARCH-03: Device Lifecycle and Key Rotation</dt>
-          <dd>SETTLE MUST provide mechanisms for routine key rotation, certificate renewal without user intervention, and trust revocation. A factory reset of a Device MUST cryptographically invalidate and purge all prior local trust bindings.</dd>
+          <dd>SETTLE MUST provide mechanisms for routine key rotation, certificate renewal without user intervention, and trust revocation. A factory reset of a Device MUST erase the private keys, credentials, and trust bindings from its prior enrollment, other than a manufacturer-installed identity. A reset cannot remove trust bindings held by other Devices, only make them obsolete, so SETTLE MUST define how those Devices handle an obsolete binding, including when they were offline at the time of the reset.</dd>
         </dl>
       </section>
     </section>
@@ -289,6 +289,16 @@
           <date year="2024"/>
         </front>
         <seriesInfo name="Internet-Draft" value="draft-ietf-anima-brski-prm-23"/>
+      </reference>
+
+      <reference anchor="I-D.ietf-dnssd-uld" target="https://datatracker.ietf.org/doc/html/draft-ietf-dnssd-uld">
+        <front>
+          <title>Providing Local Unicast DNS-SD Service on Infrastructure</title>
+          <author fullname="Ted Lemon" initials="T." surname="Lemon"/>
+          <author fullname="Karsten Sperling" initials="K." surname="Sperling"/>
+          <date year="2026" month="August"/>
+        </front>
+        <seriesInfo name="Internet-Draft" value="draft-ietf-dnssd-uld-00"/>
       </reference>
 
       <reference anchor="I-D.ietf-emu-bootstrapped-tls" target="https://datatracker.ietf.org/doc/html/draft-ietf-emu-bootstrapped-tls">
