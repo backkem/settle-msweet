@@ -1,0 +1,1064 @@
+
+
+
+
+SETTLE                                                     M. Sweet, Ed.
+Internet-Draft                             Lakeside Robotics Corporation
+Intended status: Informational                        M. De Backker, Ed.
+Expires: 6 April 2027                                     3 October 2026
+
+
+  SEcure access To Tls Local rEsources (SETTLE) Problem Statement and
+                              Requirements
+                   draft-sweet-settle-requirements-00
+
+Abstract
+
+   This document defines the problem statement, common terminology,
+   security models, and technical requirements for identifying,
+   validating, and establishing secure connections with local network
+   devices.  It outlines the challenges of extending the Web's Public
+   Key Infrastructure (PKI) to local, offline, or "limited domain"
+   environments.  The document specifies requirements for privacy-
+   preserving discovery, generating and distributing local trust
+   anchors, and establishing mutually authenticated secure contexts
+   without relying on global certificate authorities or problematic
+   Trust On First Use (TOFU) mechanisms.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 6 April 2027.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+
+
+
+Sweet & De Backker        Expires 6 April 2027                  [Page 1]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   3.  Overview and Goals  . . . . . . . . . . . . . . . . . . . . .   5
+   4.  Requirements  . . . . . . . . . . . . . . . . . . . . . . . .   6
+     4.1.  Naming and Discovery (REQ-NAME) . . . . . . . . . . . . .   6
+     4.2.  Verification and Bootstrapping (REQ-VERIFY) . . . . . . .   7
+     4.3.  Protocol and Transport (REQ-TRANS)  . . . . . . . . . . .   7
+     4.4.  Architecture and Management (REQ-ARCH)  . . . . . . . . .   8
+   5.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
+     5.1.  Evil Twin and Network Impersonation . . . . . . . . . . .   9
+     5.2.  Compromise of the Referee . . . . . . . . . . . . . . . .   9
+     5.3.  Social Engineering and Support Scams  . . . . . . . . . .   9
+     5.4.  Confused Deputy Attacks . . . . . . . . . . . . . . . . .   9
+     5.5.  Factory Reset Incompleteness  . . . . . . . . . . . . . .   9
+     5.6.  Supply Chain Attacks  . . . . . . . . . . . . . . . . . .  10
+     5.7.  Denial of Service . . . . . . . . . . . . . . . . . . . .  10
+   6.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .  10
+   7.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  11
+   8.  Normative References  . . . . . . . . . . . . . . . . . . . .  11
+   9.  Informative References  . . . . . . . . . . . . . . . . . . .  12
+   Appendix A.  Prior Art and Related Work . . . . . . . . . . . . .  17
+   Appendix B.  Change History . . . . . . . . . . . . . . . . . . .  19
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  19
+
+1.  Introduction
+
+   Local networks have historically used a mix of encrypted and
+   unencrypted communications with no common method to establish trust.
+   Access is provided to those who have the Wi-Fi password or an
+   Ethernet cable, and the connected device simply trusts the
+   information provided to it by the DHCP service or Router
+   Advertisements on that network.  In contrast, the Internet
+   increasingly uses encrypted communications with a well-regulated
+   system of Certificate Authorities, Domain Name Providers, Address
+   Registries, and distributed Domain Name Services that form the basis
+   of trust on the "modern web."
+
+   With the advent of HTTPS everywhere, browsers disadvantage web
+   services using unencrypted communications by requiring a Secure
+   Context for features such as Direct Sockets, Geolocation, Service
+
+
+
+Sweet & De Backker        Expires 6 April 2027                  [Page 2]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   Workers, Web Bluetooth, WebCrypto, WebTransport, and WebRTC.  The
+   concept of "Limited Domains" [RFC8799] encapsulates these local,
+   constrained environments, but existing web security models struggle
+   to adapt to them.  Furthermore, modern browser security models, such
+   as Local Network Access (LNA) [WICG.LNA], restrict public websites
+   from making requests to private IP addresses without explicit secure
+   contexts and user permissions.
+
+   Existing deployments of TLS on local networks typically use "self-
+   signed" X.509 certificates that lack the endorsement of a trusted
+   party, relying instead on Trust on First Use (TOFU) mechanisms.
+   Because the client User Agent lacks a cryptographic trust anchor for
+   the Infrastructure Device, it presents a "scary" certificate warning.
+   Users frequently disregard these warnings, leading to warning fatigue
+   and leaving them vulnerable to active interception.  Conversely,
+   network devices are unable to determine the trustworthiness of the
+   local network, humorous solutions such as the "evil bit" from
+   [RFC3514] aside.
+
+   This document defines common terminology and requirements for
+   discovering, identifying, validating, and establishing secure
+   connections with local network devices without relying on Trust On
+   First Use (TOFU) or continuous Internet connectivity.  Importantly,
+   nothing here will help determine whether a network or network device
+   is actually trustworthy, merely that it possesses a verifiable
+   identity.
+
+2.  Terminology
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in BCP 14 [RFC2119]
+   [RFC8174] when, and only when, they appear in all capitals, as shown
+   here.
+
+   Bootstrapping:  The process of establishing an initial trust
+      relationship and secure communication channel between a User Agent
+      and a Device where no prior relationship exists.
+
+   Certificate Authority:  A party or service [RFC8555] that provides
+      Cryptographic Identities that are signed by one or more Trust
+      Anchors for the purpose of establishing trust [RFC5280].
+
+   Client Device:  A Device used primarily by End Users to access
+      services, e.g., a smartphone, a laptop, a tablet.
+
+   Client Identity:  A Cryptographic Identity bound to a Client Device
+      that has been signed by a Trust Anchor.
+
+
+
+Sweet & De Backker        Expires 6 April 2027                  [Page 3]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   Cryptographic Identity:  A persistent, cryptographically verifiable
+      identifier, e.g., an X.509 public key infrastructure certificate
+      [RFC5280].
+
+   Device:  An entity with a network interface that connects to a local
+      network.
+
+   Device Identity:  A Cryptographic Identifier bound to a specific
+      Device.  This may be derived from a hardware manufacturer root,
+      e.g., Initial Device Identifier, IDevID [IEEE.802.1AR], or locally
+      generated value.
+
+   Device Name:  A DNS or mDNS label for a Device.
+
+   Infrastructure Device:  A Device providing a service on the local
+      network, e.g., a printer, a router, an IoT hub.
+
+   Infrastructure Identity:  A Cryptographic Identity bound to an
+      Infrastructure Device that has been signed by a Trust Anchor.
+
+   Local Certificate Authority:  A Certificate Authority for the local
+      network.
+
+   Local Trust Anchor:  A Trust Anchor for the local network.
+
+   Origin Server:  A program that can originate authoritative responses
+      for a given target resource [RFC9110], e.g. a web server..
+
+   Out-of-Band (OOB) Ceremony:  A mechanism for transferring trust
+      entropy via a channel physically separate from the network.  [MOVE
+      THIS: Different mechanisms offer varying security properties,
+      including QR codes (visual, high entropy), PIN entry (manual, low
+      entropy), Short Authentication Strings (SAS), Near Field
+      Communication (NFC), or Push-Button Configuration (PBC).]
+
+   Protected Communications:  Communications between two Devices whose
+      Identities have been verified and use methods such as cryptography
+      to protect any data from eavesdropping or undetected modification.
+
+   Referee (Local Manager):  An Infrastructure Device that is designated
+      as the Local Certificate Authority/trust broker, transitioning a
+      mesh of unverified devices into a hub-and-spoke trust topology.
+      [QUESTION: Is the latter a hard requirement or just how current
+      referees are defined/implemented?]
+
+   Secure Context:  An environment meeting the minimum standards of
+      authentication and confidentiality as defined by the W3C Secure
+      Contexts specification [W3C.SecureContexts].
+
+
+
+Sweet & De Backker        Expires 6 April 2027                  [Page 4]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   Trust Anchor:  A Cryptographic Identity that is trusted by a Client
+      Device and/or UA.
+
+   Trust On First Use (TOFU):  An approach where a Client Device and/or
+      UA accepts the first Cryptographic Identity presented by an
+      Infrastructure Device or Origin Server.  The identity is sometimes
+      confirmed by an End User before acceptance.
+
+   User Agent (UA):  A client program that initiates a request to an
+      Origin Server [RFC9110], e.g., a web browser.
+
+3.  Overview and Goals
+
+   SEcure access To Tls Local rEsources (SETTLE) [SETTLE] is concerned
+   with enabling Protected Communications within any Zero-Trust Local
+   Area Network.  Protected Communications typically are implemented
+   using TLS [RFC9846] with X.509 certificates [RFC5280] signed by a
+   known Trust Anchor.  Importantly, SETTLE does not deal with the
+   notion of trustworthiness (authentication, authorization, access
+   control, and/or attestation) or Users but instead is focused on the
+   more basic issues of Device Identity verification and the use of a
+   Local Certificate Authority and Trust Anchor to permit local
+   autonomous operation without an active connection to the Internet.
+
+   The goals of SETTLE include:
+
+   *  *Autonomous/Semi-Autonomous Operation:* Allow Devices to connect
+      and obtain credentials automatically whenever possible.
+
+   *  *Common Connection/Policy Support:*: Make it possible for Devices
+      to better adapt and participate on LANs with different
+      capabilities and/or policies, particularly home vs. enterprise
+      networks.
+
+   *  *Improved Security:* Eliminate the use of TOFU policies for IoT
+      Devices by using X.509 certificates that are signed by a Local
+      Trust Anchor.
+
+   *  *Improved User Experience:* Enable normal HTTPS access to Devices
+      such as cameras, printers, routers, etc. using a standard User
+      Agent such as a web browser.
+
+   *  *Standalone Operation:* Do not require an Internet connection to
+      function.  Obviously there could be cloud/distributed/managed
+      solutions but the core architecture/protocols do not require it.
+
+
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                  [Page 5]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   Once a User Agent trusts a Device, the Device should be reachable
+   through existing application protocols, such as HTTPS and
+   WebTransport [W3C.WebTransport], using their normal server
+   authentication.  Applications should not need protocol-specific
+   exceptions or a separate trust establishment step for each protocol.
+
+4.  Requirements
+
+4.1.  Naming and Discovery (REQ-NAME)
+
+   REQ-NAME-01: Unique Identifiers  SETTLE MUST provide a mechanism to
+      assign unique Device Names.  A Device Name MUST be unique within
+      its discovery scope, such as the local link, and SHOULD be
+      globally unique.  Independently administered networks may still
+      reuse a name; SETTLE MUST ensure that such a collision does not
+      let one Device impersonate another or undermine trust
+      relationships already established.  To prevent collisions, names
+      SHOULD incorporate high-entropy device-specific data, such as MAC
+      addresses [I-D.housley-lamps-macaddress-on] or public key hashes
+      [I-D.wing-settle-public-key-hash].
+
+   REQ-NAME-02: Local Namespace Compatibility  Device Names MUST utilize
+      standardized namespaces reserved for local or non-DNS use to
+      ensure broad client support.  Valid namespaces include ".local"
+      for mDNS [RFC6762], "home.arpa." for unicast DNS [RFC8375], or
+      ".alt" [RFC9476].
+
+   REQ-NAME-03: Independence from Global DNS  Device Name resolution
+      MUST NOT depend on the availability of global DNS infrastructure.
+
+   REQ-NAME-04: Standardized Discovery  SETTLE MUST utilize standard
+      local discovery protocols, such as DNS-Based Service Discovery
+      (DNS-SD) [RFC6763], Unicast Local Discovery (ULD)
+      [I-D.ietf-dnssd-uld], or Captive Portal APIs [RFC8910], to locate
+      Devices prior to authentication.  Discovery records MAY carry
+      transport-security parameters such as a certificate fingerprint
+      [I-D.liu-add-dnssd-edns], but these are unauthenticated hints and
+      MUST NOT be treated as a Trust Anchor distribution channel (REQ-
+      VERIFY-01).
+
+   REQ-NAME-05: Privacy-Preserving Discovery  The discovery mechanism
+      MUST prevent passive tracking of Devices or Users.  SETTLE MUST
+      NOT broadcast static identifiers (like MAC addresses or static
+      account hashes) in plaintext if the Device is portable.  SETTLE
+      SHOULD utilize rotating identifiers or cryptographic mechanisms
+      like Private Set Intersection (PSI).  See [RFC8882] for an
+      analysis of discovery privacy requirements.
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                  [Page 6]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+4.2.  Verification and Bootstrapping (REQ-VERIFY)
+
+   REQ-VERIFY-01: Rejection of Network TOFU  SETTLE MUST NOT rely on
+      automatic Trust On First Use (TOFU) executed exclusively over the
+      local network interface for initial authentication.
+
+   REQ-VERIFY-02: Out-of-Band (OOB) Ceremony  SETTLE MUST define or
+      profile an OOB mechanism to transfer verification entropy when a
+      suitable Device Identity is not available.  OOB material that
+      directly authenticates a key, such as a key hash in a QR code,
+      MUST provide at least 128 bits of entropy to resist offline
+      attacks.  OOB material consumed by a PAKE or a commit-and-compare
+      ceremony, such as a PIN or a Short Authentication String, MAY
+      carry less, provided the protocol limits an attacker to a bounded
+      number of online guesses and prevents offline testing against
+      recorded traffic [RFC6189].
+
+   REQ-VERIFY-03: Pre-Installed Identity Optimization  SETTLE SHOULD
+      support the use of manufacturer-installed certificates (e.g.,
+      IDevID [IEEE.802.1AR],
+      [I-D.irtf-t2trg-taxonomy-manufacturer-anchors]).  When used,
+      SETTLE MUST define a mechanism (e.g., Vouchers [RFC8366]) to
+      cryptographically bind the manufacturer-provided identity to the
+      user-facing Device Name.
+
+   REQ-VERIFY-04: Dynamic Local Trust Store  User Agents MUST support a
+      Local Trust Anchor.  Depending on the trust store, a locally
+      installed WebPKI trust anchor can confer authority over any DNS
+      name.  A Local Trust Anchor MUST instead be limited to the local
+      namespaces of REQ-NAME-02, and the User Agent MUST enforce that
+      limit itself, since path validation may ignore name constraints
+      carried in a self-signed trust anchor [RFC6818].
+
+4.3.  Protocol and Transport (REQ-TRANS)
+
+   REQ-TRANS-01: Modern Transport Security  All communications requiring
+      a secure context MUST utilize TLS 1.3 [RFC9846] or equivalent
+      modern transport security protocols.
+
+   REQ-TRANS-02: Implicit TLS Preference  To minimize downgrade attacks,
+      the system SHOULD utilize Implicit TLS (connect-then-handshake)
+      rather than connection-upgrade mechanisms (e.g., STARTTLS)
+      [RFC8314].
+
+   REQ-TRANS-03: Subject Alternative Name (SAN) Matching  Device
+
+
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                  [Page 7]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+      certificates MUST populate the Subject Alternative Name (SAN)
+      extension.  User Agents MUST verify these identities in accordance
+      with [RFC9525] and IoT TLS profiles
+      [I-D.ietf-uta-tls13-iot-profile].
+
+   REQ-TRANS-04: Browser Policy Compatibility  SETTLE MUST work within
+      browser Local Network Access (LNA) policies [WICG.LNA].  Devices
+      MUST be able to serve certificates that validate under SETTLE's
+      trust model, so that a connection permitted under LNA also yields
+      a Secure Context.  SETTLE SHOULD make the trust it establishes
+      available to User Agents as an input to LNA decisions, so that
+      browsers can reduce redundant prompts for Devices the User has
+      already verified, without weakening LNA's protection against
+      unauthorized origins.
+
+   REQ-TRANS-05: Interoperability and Agility  SETTLE MUST support
+      cryptographic agility to accommodate future algorithm
+      deprecations, including the transition to post-quantum
+      cryptography, and ensure interoperability between independent
+      vendor implementations.  The transition also affects the OOB
+      Ceremony (REQ-VERIFY-02): post-quantum public keys are too large
+      to carry conveniently in a QR code, and PAKEs in current use, such
+      as SPAKE2 [RFC9382], rely on the discrete logarithm problem.
+
+4.4.  Architecture and Management (REQ-ARCH)
+
+   REQ-ARCH-01: Standalone Operation  SETTLE MUST operate securely
+      without requiring Internet connectivity.
+
+   REQ-ARCH-02: Referee / Delegation Support  SETTLE MUST support a
+      hierarchical local trust model where a mutually authenticated
+      Referee can issue credentials to Devices.
+
+   REQ-ARCH-03: Device Lifecycle and Key Rotation  SETTLE MUST provide
+      mechanisms for routine key rotation, certificate renewal without
+      user intervention, and trust revocation.  A factory reset of a
+      Device MUST erase the private keys, credentials, and trust
+      bindings from its prior enrollment, other than a manufacturer-
+      installed identity.  A reset cannot remove trust bindings held by
+      other Devices, only make them obsolete, so SETTLE MUST define how
+      those Devices handle an obsolete binding, including when they were
+      offline at the time of the reset.
+
+5.  Security Considerations
+
+
+
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                  [Page 8]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+5.1.  Evil Twin and Network Impersonation
+
+   An attacker may clone a local Wi-Fi access point (Evil Twin), spoof
+   BSSIDs, or poison mDNS caches to redirect traffic to a malicious
+   endpoint.  Because SETTLE mandates an OOB Ceremony (REQ-VERIFY-02)
+   and rejects pure TOFU, the UA will detect the certificate mismatch
+   and abort the connection, neutralizing the impersonation.
+
+5.2.  Compromise of the Referee
+
+   The Referee acts as the root of trust for the local network.  If the
+   Referee is compromised, the attacker can issue trusted certificates
+   for any name within the local namespace, enabling widespread MITM
+   attacks against the UA.  Clients SHOULD scope Referee trust to the
+   explicit local namespace.
+
+5.3.  Social Engineering and Support Scams
+
+   If installing trust anchors is made significantly easier, malicious
+   actors (e.g., fake "customer support") may instruct users to scan a
+   malicious QR code, thereby installing a rogue trust anchor.  UAs MUST
+   provide clear, unambiguous UI warnings during the OOB ceremony about
+   the implications of trusting a new device or Referee.
+
+5.4.  Confused Deputy Attacks
+
+   Public websites often attempt to use the browser as a "confused
+   deputy" to attack local network devices via Cross-Site Request
+   Forgery (CSRF).  Local Network Access (REQ-TRANS-04) addresses this
+   directly by requiring the User's permission before a public site can
+   reach the local network.  Verifying a Client Identity complements it,
+   letting a Device also reject permitted requests that are not
+   authenticated.
+
+5.5.  Factory Reset Incompleteness
+
+   Research into IoT protocols has shown that hardware factory resets
+   frequently fail to clear all administrative fabrics or ACLs, leaving
+   devices vulnerable to prior owners.  REQ-ARCH-03 mandates that a
+   factory reset MUST completely destroy all cryptographic material
+   linking the device to prior local trust domains.
+
+
+
+
+
+
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                  [Page 9]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+5.6.  Supply Chain Attacks
+
+   When utilizing Pre-Installed Trust (IDevID), a compromised
+   manufacturer or stolen batch of private keys allows an attacker to
+   masquerade as a legitimate device.  UAs SHOULD support mechanisms to
+   constrain manufacturer trust to specific scopes or require secondary
+   local validation.  Manufacturer Usage Description [RFC8520] can bound
+   what a compromised Device may reach once joined, but does not help
+   establish trust.
+
+5.7.  Denial of Service
+
+   Local networks are vulnerable to resource exhaustion.  Malicious
+   peers may flood the network with mDNS advertisements, initiate
+   thousands of TLS handshakes, or attempt to exhaust certificate
+   enrollment limits (e.g., attacking a local ACME server).
+   Implementations SHOULD employ rate-limiting and prioritize OOB-
+   authenticated traffic.  Carrying handshake material over multicast
+   discovery amplifies this, since every listener on the link must parse
+   each unsolicited flight.
+
+6.  Privacy Considerations
+
+   In accordance with [RFC6973], privacy vulnerabilities in local
+   networks must be considered.
+
+   *Device Tracking:* Utilizing MAC addresses or static hardware
+   identifiers in Local Device Names (e.g., mDNS broadcasts) allows
+   passive observers on the local network to track device presence and
+   infer user behavior.  Portable devices SHOULD utilize privacy-
+   preserving, rotating identifiers.
+
+   *Account-Scoped Identifiers:* Embedding account-level UUIDs into
+   local certificates (as seen in some proprietary local sharing
+   protocols) allows devices belonging to the same user to be correlated
+   by passive observers.  Device identities MUST be scoped to the device
+   itself, not a global user account, unless protected by an encrypted
+   transport.
+
+   *Hash-Based Contact Leaks:* Transmitting truncated hashes of contact
+   information (e.g., phone numbers or emails) for mutual discovery is
+   vulnerable to brute-force reversal.  Implementations prioritizing
+   privacy SHOULD utilize Private Set Intersection (PSI) [PrivateDrop]
+   or similar cryptographic techniques for discovery.
+
+   *Discovery-Channel Metadata:* Anything in a discovery record is
+   readable by every listener on the link.  A certificate fingerprint
+   advertised in a TXT record or SVCB parameter is a stable identifier
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 10]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   and defeats the rotating identifiers REQ-NAME-05 asks of portable
+   Devices.  Handshake material carried on the discovery channel reveals
+   that a pairing attempt is under way even when encrypted, and its
+   length can identify the service sought, which is why
+   [I-D.huitema-dnssd-tls-privacy] pads it to a fixed size.
+
+7.  IANA Considerations
+
+   This document has no IANA actions.
+
+8.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC3927]  Cheshire, S., Aboba, B., and E. Guttman, "Dynamic
+              Configuration of IPv4 Link-Local Addresses", RFC 3927,
+              DOI 10.17487/RFC3927, May 2005,
+              <https://www.rfc-editor.org/info/rfc3927>.
+
+   [RFC4193]  Hinden, R. and B. Haberman, "Unique Local IPv6 Unicast
+              Addresses", RFC 4193, DOI 10.17487/RFC4193, October 2005,
+              <https://www.rfc-editor.org/info/rfc4193>.
+
+   [RFC5280]  Cooper, D., Santesson, S., Farrell, S., Boeyen, S.,
+              Housley, R., and W. Polk, "Internet X.509 Public Key
+              Infrastructure Certificate and Certificate Revocation List
+              (CRL) Profile", RFC 5280, DOI 10.17487/RFC5280, May 2008,
+              <https://www.rfc-editor.org/info/rfc5280>.
+
+   [RFC6762]  Cheshire, S. and M. Krochmal, "Multicast DNS", RFC 6762,
+              DOI 10.17487/RFC6762, February 2013,
+              <https://www.rfc-editor.org/info/rfc6762>.
+
+   [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
+              Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
+              <https://www.rfc-editor.org/info/rfc6763>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+   [RFC8375]  Pfister, P. and T. Lemon, "Special-Use Domain
+              'home.arpa.'", RFC 8375, DOI 10.17487/RFC8375, May 2018,
+              <https://www.rfc-editor.org/info/rfc8375>.
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 11]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   [RFC9110]  Fielding, R., Ed., Nottingham, M., Ed., and J. Reschke,
+              Ed., "HTTP Semantics", STD 97, RFC 9110,
+              DOI 10.17487/RFC9110, June 2022,
+              <https://www.rfc-editor.org/info/rfc9110>.
+
+   [RFC9476]  Kumari, W. and P. Hoffman, "The .alt Special-Use Top-Level
+              Domain", RFC 9476, DOI 10.17487/RFC9476, September 2023,
+              <https://www.rfc-editor.org/info/rfc9476>.
+
+   [RFC9525]  Saint-Andre, P. and R. Salz, "Service Identity in TLS",
+              RFC 9525, DOI 10.17487/RFC9525, November 2023,
+              <https://www.rfc-editor.org/info/rfc9525>.
+
+   [RFC9846]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
+              Version 1.3", RFC 9846, DOI 10.17487/RFC9846, July 2026,
+              <https://www.rfc-editor.org/info/rfc9846>.
+
+9.  Informative References
+
+   [DPP]      Wi-Fi Alliance, "Device Provisioning Protocol
+              Specification, Version 3.0", 2023,
+              <https://www.wi-fi.org/discover-wi-fi/wi-fi-easy-connect>.
+
+   [I-D.housley-lamps-macaddress-on]
+              Housley, R., "MAC Address in X.509 Certificate otherName",
+              Work in Progress, Internet-Draft, draft-housley-lamps-
+              macaddress-on, 2026,
+              <https://datatracker.ietf.org/doc/html/draft-housley-
+              lamps-macaddress-on>.
+
+   [I-D.huitema-dnssd-tls-privacy]
+              Huitema, C. and D. Kaiser, "Private Discovery with TLS-
+              ESNI", Work in Progress, Internet-Draft, draft-huitema-
+              dnssd-tls-privacy-01, March 2019,
+              <https://datatracker.ietf.org/doc/html/draft-huitema-
+              dnssd-tls-privacy>.
+
+   [I-D.ietf-anima-brski-prm]
+              Fries, S., Werner, T., Lear, E., and M. Richardson, "BRSKI
+              with Pledge in Responder Mode (BRSKI-PRM)", Work in
+              Progress, Internet-Draft, draft-ietf-anima-brski-prm-23,
+              2024, <https://datatracker.ietf.org/doc/html/draft-ietf-
+              anima-brski-prm>.
+
+
+
+
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 12]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   [I-D.ietf-dnssd-uld]
+              Lemon, T. and K. Sperling, "Providing Local Unicast DNS-SD
+              Service on Infrastructure", Work in Progress, Internet-
+              Draft, draft-ietf-dnssd-uld-00, August 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-dnssd-
+              uld>.
+
+   [I-D.ietf-emu-bootstrapped-tls]
+              Friel, O. and D. Harkins, "Bootstrapped TLS Authentication
+              with Proof of Knowledge", Work in Progress, Internet-
+              Draft, draft-ietf-emu-bootstrapped-tls-07, 2024,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-emu-
+              bootstrapped-tls>.
+
+   [I-D.ietf-tls-pake]
+              Hoyland, J. and O. Friel, "TLS 1.3 Extension for Password-
+              Authenticated Key Exchange", Work in Progress, Internet-
+              Draft, draft-ietf-tls-pake-00, September 2025,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-tls-
+              pake>.
+
+   [I-D.ietf-uta-tls13-iot-profile]
+              Fossati, T. and H. Tschofenig, "TLS/DTLS 1.3 Profiles for
+              the Internet of Things", Work in Progress, Internet-Draft,
+              draft-ietf-uta-tls13-iot-profile-11, 2024,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-uta-
+              tls13-iot-profile>.
+
+   [I-D.irtf-t2trg-taxonomy-manufacturer-anchors]
+              Richardson, M., "Taxonomy of Manufacturer-Installed Trust
+              Anchors", Work in Progress, Internet-Draft, draft-irtf-
+              t2trg-taxonomy-manufacturer-anchors, 2024,
+              <https://datatracker.ietf.org/doc/html/draft-irtf-t2trg-
+              taxonomy-manufacturer-anchors>.
+
+   [I-D.liu-add-dnssd-edns]
+              Liu, D., Yan, Z., Geng, G., and G. Zeng, "DNS-Based
+              Service Discovery for Encrypted DNS Services", Work in
+              Progress, Internet-Draft, draft-liu-add-dnssd-edns-02,
+              March 2026, <https://datatracker.ietf.org/doc/html/draft-
+              liu-add-dnssd-edns>.
+
+   [I-D.sweet-iot-acme]
+              Sweet, M., "ACME-Based Provisioning of IoT Devices", Work
+              in Progress, Internet-Draft, draft-sweet-iot-acme-07,
+              February 2025, <https://datatracker.ietf.org/doc/html/
+              draft-sweet-iot-acme>.
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 13]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   [I-D.wing-settle-public-key-hash]
+              Wing, D., "Public Key Hash for Local Domains", Work in
+              Progress, Internet-Draft, draft-wing-settle-public-key-
+              hash-01, 2025, <https://datatracker.ietf.org/doc/html/
+              draft-wing-settle-public-key-hash>.
+
+   [I-D.wing-settle-referee]
+              Wing, D., "A Referee to Authenticate Servers in Local
+              Domains", Work in Progress, Internet-Draft, draft-wing-
+              settle-referee-00, January 2025,
+              <https://datatracker.ietf.org/doc/html/draft-wing-settle-
+              referee>.
+
+   [IEEE.802.1AR]
+              IEEE, "IEEE Standard for Local and Metropolitan Area
+              Networks - Secure Device Identity", IEEE 802.1AR-2018,
+              2018, <https://standards.ieee.org/ieee/802.1AR/7436/>.
+
+   [Matter]   Connectivity Standards Alliance, "Matter Specification,
+              Version 1.4", 2024,
+              <https://csa-iot.org/all-solutions/matter/>.
+
+   [PionDTLSmDNS]
+              pion, "Implement sync HandshakeConn API, with an example
+              carrying a DTLS handshake over mDNS", pion/dtls commit
+              fd43549, September 2026,
+              <https://github.com/pion/dtls/commit/
+              fd43549314dc0cf8637167cd5af7ffb521951d80>.
+
+   [PrivateDrop]
+              Heinrich, A., Hollick, M., Schneider, T., Stute, M., and
+              C. Weinert, "PrivateDrop: Practical Privacy-Preserving
+              Authentication for Apple AirDrop", USENIX Security 2021,
+              August 2021,
+              <https://www.usenix.org/conference/usenixsecurity21/
+              presentation/heinrich>.
+
+   [RFC2693]  Ellison, C., Frantz, B., Lampson, B., Rivest, R., Thomas,
+              B., and T. Ylonen, "SPKI Certificate Theory", RFC 2693,
+              DOI 10.17487/RFC2693, September 1999,
+              <https://www.rfc-editor.org/info/rfc2693>.
+
+   [RFC3514]  Bellovin, S., "The Security Flag in the IPv4 Header",
+              RFC 3514, DOI 10.17487/RFC3514, April 2003,
+              <https://www.rfc-editor.org/info/rfc3514>.
+
+
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 14]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   [RFC4255]  Schlyter, J. and W. Griffin, "Using DNS to Securely
+              Publish Secure Shell (SSH) Key Fingerprints", RFC 4255,
+              DOI 10.17487/RFC4255, January 2006,
+              <https://www.rfc-editor.org/info/rfc4255>.
+
+   [RFC6189]  Zimmermann, P., Johnston, A., Ed., and J. Callas, "ZRTP:
+              Media Path Key Agreement for Unicast Secure RTP",
+              RFC 6189, DOI 10.17487/RFC6189, April 2011,
+              <https://www.rfc-editor.org/info/rfc6189>.
+
+   [RFC6698]  Hoffman, P. and J. Schlyter, "The DNS-Based Authentication
+              of Named Entities (DANE) Transport Layer Security (TLS)
+              Protocol: TLSA", RFC 6698, DOI 10.17487/RFC6698, August
+              2012, <https://www.rfc-editor.org/info/rfc6698>.
+
+   [RFC6818]  Yee, P., "Updates to the Internet X.509 Public Key
+              Infrastructure Certificate and Certificate Revocation List
+              (CRL) Profile", RFC 6818, DOI 10.17487/RFC6818, January
+              2013, <https://www.rfc-editor.org/info/rfc6818>.
+
+   [RFC6973]  Cooper, A., Tschofenig, H., Aboba, B., Peterson, J.,
+              Morris, J., Hansen, M., and R. Smith, "Privacy
+              Considerations for Internet Protocols", RFC 6973,
+              DOI 10.17487/RFC6973, July 2013,
+              <https://www.rfc-editor.org/info/rfc6973>.
+
+   [RFC7030]  Pritikin, M., Ed., Yee, P., Ed., and D. Harkins, Ed.,
+              "Enrollment over Secure Transport", RFC 7030,
+              DOI 10.17487/RFC7030, October 2013,
+              <https://www.rfc-editor.org/info/rfc7030>.
+
+   [RFC7435]  Dukhovni, V., "Opportunistic Security: Some Protection
+              Most of the Time", RFC 7435, DOI 10.17487/RFC7435,
+              December 2014, <https://www.rfc-editor.org/info/rfc7435>.
+
+   [RFC8314]  Moore, K. and C. Newman, "Cleartext Considered Obsolete:
+              Use of Transport Layer Security (TLS) for Email Submission
+              and Access", RFC 8314, DOI 10.17487/RFC8314, January 2018,
+              <https://www.rfc-editor.org/info/rfc8314>.
+
+   [RFC8366]  Watsen, K., Richardson, M., Pritikin, M., and T. Eckert,
+              "A Voucher Artifact for Bootstrapping Protocols",
+              RFC 8366, DOI 10.17487/RFC8366, May 2018,
+              <https://www.rfc-editor.org/info/rfc8366>.
+
+
+
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 15]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   [RFC8520]  Lear, E., Droms, R., and D. Romascanu, "Manufacturer Usage
+              Description Specification", RFC 8520,
+              DOI 10.17487/RFC8520, March 2019,
+              <https://www.rfc-editor.org/info/rfc8520>.
+
+   [RFC8555]  Barnes, R., Hoffman-Andrews, J., McCarney, D., and J.
+              Kasten, "Automatic Certificate Management Environment
+              (ACME)", RFC 8555, DOI 10.17487/RFC8555, March 2019,
+              <https://www.rfc-editor.org/info/rfc8555>.
+
+   [RFC8799]  Carpenter, B. and B. Liu, "Limited Domains and Internet
+              Protocols", RFC 8799, DOI 10.17487/RFC8799, July 2020,
+              <https://www.rfc-editor.org/info/rfc8799>.
+
+   [RFC8882]  Huitema, C. and D. Kaiser, "DNS-Based Service Discovery
+              (DNS-SD) Privacy and Security Requirements", RFC 8882,
+              DOI 10.17487/RFC8882, September 2020,
+              <https://www.rfc-editor.org/info/rfc8882>.
+
+   [RFC8910]  Kumari, W. and E. Kline, "Captive-Portal Identification in
+              DHCP and Router Advertisements (RAs)", RFC 8910,
+              DOI 10.17487/RFC8910, September 2020,
+              <https://www.rfc-editor.org/info/rfc8910>.
+
+   [RFC8995]  Pritikin, M., Richardson, M., Eckert, T., Behringer, M.,
+              and K. Watsen, "Bootstrapping Remote Secure Key
+              Infrastructure (BRSKI)", RFC 8995, DOI 10.17487/RFC8995,
+              May 2021, <https://www.rfc-editor.org/info/rfc8995>.
+
+   [RFC9140]  Aura, T., Sethi, M., and A. Peltonen, "Nimble Out-of-Band
+              Authentication for EAP (EAP-NOOB)", RFC 9140,
+              DOI 10.17487/RFC9140, December 2021,
+              <https://www.rfc-editor.org/info/rfc9140>.
+
+   [RFC9382]  Ladd, W., "SPAKE2, a Password-Authenticated Key Exchange",
+              RFC 9382, DOI 10.17487/RFC9382, September 2023,
+              <https://www.rfc-editor.org/info/rfc9382>.
+
+   [RFC9383]  Taubert, T. and C. A. Wood, "SPAKE2+, an Augmented
+              Password-Authenticated Key Exchange (PAKE) Protocol",
+              RFC 9383, DOI 10.17487/RFC9383, September 2023,
+              <https://www.rfc-editor.org/info/rfc9383>.
+
+   [RFC9460]  Schwartz, B., Bishop, M., and E. Nygren, "Service Binding
+              and Parameter Specification via the DNS (SVCB and HTTPS
+              Resource Records)", RFC 9460, DOI 10.17487/RFC9460,
+              November 2023, <https://www.rfc-editor.org/info/rfc9460>.
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 16]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   [SETTLE]   IETF, "SEcure access To Tls Local rEsources (settle)",
+              2026, <https://datatracker.ietf.org/wg/settle/about/>.
+
+   [W3C.OpenScreen]
+              W3C, "Open Screen Network Protocol", W3C Community Group
+              Report, 2024, <https://www.w3.org/TR/openscreen-network/>.
+
+   [W3C.SecureContexts]
+              West, M., "Secure Contexts", W3C Candidate Recommendation 
+              CR-secure-contexts, September 2021,
+              <https://w3c.github.io/webappsec-secure-contexts/>.
+
+   [W3C.WebTransport]
+              W3C, "WebTransport", W3C Working Draft, 2026,
+              <https://www.w3.org/TR/webtransport/>.
+
+   [WICG.LNA] WICG, "Local Network Access", W3C Draft Community Group
+              Report, 2025,
+              <https://wicg.github.io/local-network-access/>.
+
+   [ZookosTriangle]
+              Wilcox-O'Hearn, Z., "Names: Decentralized, Secure, Human-
+              Meaningful: Choose Two", 2001,
+              <https://en.wikipedia.org/wiki/Zooko%27s_triangle>.
+
+Appendix A.  Prior Art and Related Work
+
+   The SETTLE architecture builds upon and differentiates itself from
+   several existing approaches:
+
+   *  *BRSKI and BRSKI-PRM:* Bootstrapping Remote Secure Key
+      Infrastructure [RFC8995] automates provisioning using manufacturer
+      IDevIDs.  BRSKI-PRM [I-D.ietf-anima-brski-prm] demonstrates the
+      value of _object security_ (signed Vouchers) over transport
+      security for environments where pledges cannot initiate TLS
+      connections.  While powerful, BRSKI requires a supply chain root
+      of trust, which is absent in self-hosted consumer scenarios.
+
+   *  *Matter Protocol:* Matter utilizes Password-Authenticated Session
+      Establishment (PASE) [Matter], built on SPAKE2+ [RFC9383], for
+      onboarding with a 27-bit passcode.  A PAKE tolerates a low-entropy
+      passcode when an attacker is limited to online guesses; the flaws
+      reported by security analyses lie in the handling, notably static
+      salts, rather than in the passcode length itself.
+
+
+
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 17]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   *  *Wi-Fi Easy Connect (DPP):* Uses QR codes containing public keys
+      to bootstrap WPA3 credentials [DPP].  This provides a strong
+      precedent for OOB ceremonies, though it targets network-layer
+      access rather than application-layer TLS identity.
+
+   *  *Open Screen Protocol:* The W3C Open Screen Network Protocol
+      [W3C.OpenScreen] provides a particularly clean construction for
+      local device pairing without pre-shared keys.  Devices establish a
+      provisional QUIC/TLS connection using self-signed certificates,
+      then authenticate it via SPAKE2 [RFC9382] bound to a user-
+      transferred PIN.  This pattern of "connect first, authenticate via
+      PAKE second" is directly applicable to SETTLE's Track A.  Emerging
+      IETF work on integrating PAKEs directly into TLS 1.3
+      [I-D.ietf-tls-pake] may provide a standardized transport for this
+      class of bootstrapping.
+
+   *  *AirDrop / PrivateDrop:* Traditional local discovery using
+      truncated hashes leaks user identifiers.  Research into Private
+      Set Intersection (PSI) [PrivateDrop] demonstrates that privacy-
+      preserving mutual discovery is feasible with sub-second latency.
+
+   *  *SDSI/SPKI:* Simple Distributed Security Infrastructure [RFC2693]
+      proposed a decentralized PKI binding authorizations directly to
+      keys.  While conceptually aligned with local trust, modern web
+      browsers mandate X.509 [RFC5280] for compatibility.
+
+   *  *Local Public Key Hashes:* Approaches that embed public key hashes
+      into local domain names [I-D.wing-settle-public-key-hash] offer
+      self-certifying namespaces but sacrifice human-readability.
+
+   *  *Private DNS-SD:* [RFC8882] sets out privacy requirements for
+      service discovery.  [I-D.huitema-dnssd-tls-privacy] met them by
+      multicasting a ClientHello whose Encrypted SNI is keyed to a per-
+      service Discovery Key, so only a peer already holding that key can
+      learn the service is present.  The draft expired and left key
+      provisioning out of scope, which is the gap an OOB Ceremony fills.
+      A DTLS handshake carried in DNS-SD TXT record updates has since
+      been implemented [PionDTLSmDNS] (disclosure: one editor maintains
+      that project).
+
+   *  *Security Parameters in Discovery Records:*
+      [I-D.liu-add-dnssd-edns] advertises a certificate fingerprint or
+      Authentication Domain Name in TXT keys or SVCB parameters
+      [RFC9460], and tells clients not to trust a discovered service
+      automatically.
+
+
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 18]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
+   *  *DANE and SSHFP:* [RFC6698] and [RFC4255] publish a certificate or
+      key fingerprint in DNS instead of relying on a CA.  Both need
+      DNSSEC to protect that record, and a local namespace has no signed
+      parent, so SSHFP in practice falls back to TOFU.
+
+   *  *Opportunistic Security:* [RFC7435] treats unauthenticated
+      encryption and stored TOFU state as better than nothing where
+      authentication is impossible.  On a local network the User is
+      usually present, so an OOB Ceremony is available and REQ-VERIFY-01
+      asks for it.
+
+   *  *EAP-NOOB:* [RFC9140] bootstraps a device with no credentials
+      using a user-assisted OOB message generated per ceremony, and
+      rejects static printed codes because they can leak and be reused.
+
+   *  *WebTransport Certificate Hashes:* Browsers accept a self-signed
+      certificate from a local server when its SHA-256 hash is supplied
+      out of band, limited to ECDSA keys and 14 days validity
+      [W3C.WebTransport].  This is the extent of CA-free local TLS in a
+      browser today.  The page still has to obtain the hash through a
+      channel it already trusts, and the hash authenticates only that
+      WebTransport session: it does not give the User Agent trust in the
+      Device that ordinary HTTPS or other protocols can reuse.
+
+   *  *Local Referees and ACME:* Architectures utilizing a central local
+      hub to authenticate servers [I-D.wing-settle-referee] or issue
+      certificates via a local ACME server [I-D.sweet-iot-acme] optimize
+      UX but require initial bootstrapping of the Referee itself.
+
+Appendix B.  Change History
+
+   [ RFC Editor: This section to be deleted before RFC publication ]
+
+   September 29, 2026 - draft-ietf-settle-requirements-00
+
+   *  Initial revision.
+
+Authors' Addresses
+
+   Michael Sweet (editor)
+   Lakeside Robotics Corporation
+   Canada
+   Email: msweet@lakesiderobotics.ca
+
+
+   Michiel De Backker (editor)
+   Email: mail@backkem.me
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                 [Page 19]
