@@ -261,8 +261,9 @@ Internet-Draft             SETTLE Requirements              October 2026
       networks.
 
    *  *Improved Security:* Eliminate the use of TOFU policies for IoT
-      Devices by using X.509 certificates that a User Agent can verify
-      through locally established trust, such as a Local Trust Anchor.
+      Devices by using X.509 certificates that a Client Device can
+      verify through locally established trust, such as a Local Trust
+      Anchor.
 
    *  *Improved User Experience:* Enable normal HTTPS access to Devices
       such as cameras, printers, routers, etc. using a standard User
@@ -271,7 +272,6 @@ Internet-Draft             SETTLE Requirements              October 2026
    *  *Standalone Operation:* Do not require an Internet connection to
       function.  Obviously there could be cloud/distributed/managed
       solutions but the core architecture/protocols do not require it.
-
 
 
 
