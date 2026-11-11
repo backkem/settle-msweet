@@ -368,11 +368,32 @@ Internet-Draft             SETTLE Requirements              October 2026
       known name to be noticed, and need a Device that changes hands to
       keep no access to, and no trust from, the network it left.
 
+   UC-8: Field Deployments Without Infrastructure  A team working where
+      there is no Internet access, such as humanitarian field workers
+      after a disaster or a class in an area with poor connectivity,
+      brings its own Infrastructure Device, for example a laptop or
+      portable hub acting as a server, and forms a temporary network
+      from whatever devices are at hand.  Client Devices use a web
+      application served from that Device to collect, share, and
+      synchronize data, sometimes for days, before any of it can be
+      uploaded elsewhere.  The team needs to establish trust in the
+      Device on site, with no Internet connection at any step, and needs
+      that trust to hold as the Device moves between sites and networks.
+
 5.  Requirements
 
 5.1.  Naming and Discovery (REQ-NAME)
 
    REQ-NAME-01: Unique Identifiers  SETTLE MUST provide a mechanism to
+
+
+
+
+Sweet & De Backker        Expires 6 April 2027                  [Page 7]
+
+Internet-Draft             SETTLE Requirements              October 2026
+
+
       assign unique Device Names.  A Device Name MUST be unique within
       its discovery scope, such as the local link, and SHOULD be
       globally unique.  Independently administered networks may still
@@ -384,16 +405,6 @@ Internet-Draft             SETTLE Requirements              October 2026
       [I-D.wing-settle-public-key-hash].
 
    REQ-NAME-02: Local Namespace Compatibility  Device Names MUST utilize
-
-
-
-
-
-Sweet & De Backker        Expires 6 April 2027                  [Page 7]
-
-Internet-Draft             SETTLE Requirements              October 2026
-
-
       standardized namespaces reserved for local or non-DNS use to
       ensure broad client support.  Valid namespaces include ".local"
       for mDNS [RFC6762], "home.arpa." for unicast DNS [RFC8375], or
@@ -431,17 +442,6 @@ Internet-Draft             SETTLE Requirements              October 2026
       suitable Device Identity is not available.  OOB material that
       directly authenticates a key, such as a key hash in a QR code,
       MUST provide at least 128 bits of entropy to resist offline
-      attacks.  OOB material consumed by a PAKE or a commit-and-compare
-      ceremony, such as a PIN or a Short Authentication String, MAY
-      carry less, provided the protocol limits an attacker to a bounded
-      number of online guesses and prevents offline testing against
-      recorded traffic [RFC6189].
-
-   REQ-VERIFY-03: Pre-Installed Identity Optimization  SETTLE SHOULD
-
-
-
-
 
 
 
@@ -450,6 +450,13 @@ Sweet & De Backker        Expires 6 April 2027                  [Page 8]
 Internet-Draft             SETTLE Requirements              October 2026
 
 
+      attacks.  OOB material consumed by a PAKE or a commit-and-compare
+      ceremony, such as a PIN or a Short Authentication String, MAY
+      carry less, provided the protocol limits an attacker to a bounded
+      number of online guesses and prevents offline testing against
+      recorded traffic [RFC6189].
+
+   REQ-VERIFY-03: Pre-Installed Identity Optimization  SETTLE SHOULD
       support the use of manufacturer-installed certificates (e.g.,
       IDevID [IEEE.802.1AR],
       [I-D.irtf-t2trg-taxonomy-manufacturer-anchors]).  When used,
@@ -492,13 +499,6 @@ Internet-Draft             SETTLE Requirements              October 2026
       already verified, without weakening LNA's protection against
       unauthorized origins.
 
-   REQ-TRANS-05: Interoperability and Agility  SETTLE MUST support
-
-
-
-
-
-
 
 
 Sweet & De Backker        Expires 6 April 2027                  [Page 9]
@@ -506,6 +506,7 @@ Sweet & De Backker        Expires 6 April 2027                  [Page 9]
 Internet-Draft             SETTLE Requirements              October 2026
 
 
+   REQ-TRANS-05: Interoperability and Agility  SETTLE MUST support
       cryptographic agility to accommodate future algorithm
       deprecations, including the transition to post-quantum
       cryptography, and ensure interoperability between independent
@@ -556,49 +557,48 @@ Internet-Draft             SETTLE Requirements              October 2026
 
 
 
-
 Sweet & De Backker        Expires 6 April 2027                 [Page 10]
 
 Internet-Draft             SETTLE Requirements              October 2026
 
 
-                   +===============+==================+
-                   | Requirement   | Use Cases        |
-                   +===============+==================+
-                   | REQ-NAME-01   | UC-3, UC-5, UC-7 |
-                   +---------------+------------------+
-                   | REQ-NAME-02   | All              |
-                   +---------------+------------------+
-                   | REQ-NAME-03   | All              |
-                   +---------------+------------------+
-                   | REQ-NAME-04   | All              |
-                   +---------------+------------------+
-                   | REQ-NAME-05   | UC-5             |
-                   +---------------+------------------+
-                   | REQ-VERIFY-01 | All              |
-                   +---------------+------------------+
-                   | REQ-VERIFY-02 | UC-1, UC-3, UC-7 |
-                   +---------------+------------------+
-                   | REQ-VERIFY-03 | UC-4             |
-                   +---------------+------------------+
-                   | REQ-VERIFY-04 | UC-1, UC-5, UC-6 |
-                   +---------------+------------------+
-                   | REQ-TRANS-01  | All              |
-                   +---------------+------------------+
-                   | REQ-TRANS-02  | UC-2             |
-                   +---------------+------------------+
-                   | REQ-TRANS-03  | All              |
-                   +---------------+------------------+
-                   | REQ-TRANS-04  | UC-6             |
-                   +---------------+------------------+
-                   | REQ-TRANS-05  | All              |
-                   +---------------+------------------+
-                   | REQ-ARCH-01   | All              |
-                   +---------------+------------------+
-                   | REQ-ARCH-02   | UC-3, UC-4       |
-                   +---------------+------------------+
-                   | REQ-ARCH-03   | UC-4, UC-7       |
-                   +---------------+------------------+
+                +===============+========================+
+                | Requirement   | Use Cases              |
+                +===============+========================+
+                | REQ-NAME-01   | UC-3, UC-5, UC-7       |
+                +---------------+------------------------+
+                | REQ-NAME-02   | All                    |
+                +---------------+------------------------+
+                | REQ-NAME-03   | All                    |
+                +---------------+------------------------+
+                | REQ-NAME-04   | All                    |
+                +---------------+------------------------+
+                | REQ-NAME-05   | UC-5, UC-8             |
+                +---------------+------------------------+
+                | REQ-VERIFY-01 | All                    |
+                +---------------+------------------------+
+                | REQ-VERIFY-02 | UC-1, UC-3, UC-7, UC-8 |
+                +---------------+------------------------+
+                | REQ-VERIFY-03 | UC-4                   |
+                +---------------+------------------------+
+                | REQ-VERIFY-04 | UC-1, UC-5, UC-6       |
+                +---------------+------------------------+
+                | REQ-TRANS-01  | All                    |
+                +---------------+------------------------+
+                | REQ-TRANS-02  | UC-2                   |
+                +---------------+------------------------+
+                | REQ-TRANS-03  | All                    |
+                +---------------+------------------------+
+                | REQ-TRANS-04  | UC-6                   |
+                +---------------+------------------------+
+                | REQ-TRANS-05  | All                    |
+                +---------------+------------------------+
+                | REQ-ARCH-01   | All                    |
+                +---------------+------------------------+
+                | REQ-ARCH-02   | UC-3, UC-4             |
+                +---------------+------------------------+
+                | REQ-ARCH-03   | UC-4, UC-7             |
+                +---------------+------------------------+
 
                                  Table 1
 
