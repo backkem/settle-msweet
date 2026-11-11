@@ -292,12 +292,7 @@ Internet-Draft             SETTLE Requirements              October 2026
    describe what people need to do and do not suggest a design; their
    purpose is to motivate the requirements in the next section and to
    show which requirements matter in which deployments.  Not every
-   requirement applies to every use case.  All of them concern a Client
-   Device authenticating a named Infrastructure Device, and all are
-   expected to work without an Internet connection.  Connections between
-   two peers where neither has a stable name, such as browser-to-browser
-   communication, raise related questions but are not needed to meet the
-   goals of this document.
+   requirement applies to every use case.
 
    UC-1: Administering a Home Device  A User opens the administration
       page of a home router, printer, or network storage device in a web
@@ -330,6 +325,11 @@ Internet-Draft             SETTLE Requirements              October 2026
       revoke their identities, and needs Client Devices that join the
       network to trust those Devices without action by each User.
 
+   UC-5: Visiting Another Network  A User takes a Client Device to a
+      network they do not control, such as a hotel, a library, or a
+      friend's home, that has useful Devices such as printers.  A Device
+      Name there, such as "printer.local", may match one the User
+      already trusts at home.  The User needs to use a Device on the
 
 
 
@@ -338,11 +338,6 @@ Sweet & De Backker        Expires 6 April 2027                  [Page 6]
 Internet-Draft             SETTLE Requirements              October 2026
 
 
-   UC-5: Visiting Another Network  A User takes a Client Device to a
-      network they do not control, such as a hotel, a library, or a
-      friend's home, that has useful Devices such as printers.  A Device
-      Name there, such as "printer.local", may match one the User
-      already trusts at home.  The User needs to use a Device on the
       visited network without giving that network authority over
       anything else, and needs passwords, cookies, and other state saved
       for a Device at home to stay out of reach of a Device with the
@@ -385,7 +380,12 @@ Internet-Draft             SETTLE Requirements              October 2026
 5.1.  Naming and Discovery (REQ-NAME)
 
    REQ-NAME-01: Unique Identifiers  SETTLE MUST provide a mechanism to
-
+      assign unique Device Names.  A Device Name MUST be unique within
+      its discovery scope, such as the local link, and SHOULD be
+      globally unique.  Independently administered networks may still
+      reuse a name; SETTLE MUST ensure that such a collision does not
+      let one Device impersonate another or undermine trust
+      relationships already established.  To prevent collisions, names
 
 
 
@@ -394,12 +394,6 @@ Sweet & De Backker        Expires 6 April 2027                  [Page 7]
 Internet-Draft             SETTLE Requirements              October 2026
 
 
-      assign unique Device Names.  A Device Name MUST be unique within
-      its discovery scope, such as the local link, and SHOULD be
-      globally unique.  Independently administered networks may still
-      reuse a name; SETTLE MUST ensure that such a collision does not
-      let one Device impersonate another or undermine trust
-      relationships already established.  To prevent collisions, names
       SHOULD incorporate high-entropy device-specific data, such as MAC
       addresses [I-D.housley-lamps-macaddress-on] or public key hashes
       [I-D.wing-settle-public-key-hash].
@@ -442,6 +436,12 @@ Internet-Draft             SETTLE Requirements              October 2026
       suitable Device Identity is not available.  OOB material that
       directly authenticates a key, such as a key hash in a QR code,
       MUST provide at least 128 bits of entropy to resist offline
+      attacks.  OOB material consumed by a PAKE or a commit-and-compare
+      ceremony, such as a PIN or a Short Authentication String, MAY
+      carry less, provided the protocol limits an attacker to a bounded
+      number of online guesses and prevents offline testing against
+      recorded traffic [RFC6189].
+
 
 
 
@@ -449,12 +449,6 @@ Sweet & De Backker        Expires 6 April 2027                  [Page 8]
 
 Internet-Draft             SETTLE Requirements              October 2026
 
-
-      attacks.  OOB material consumed by a PAKE or a commit-and-compare
-      ceremony, such as a PIN or a Short Authentication String, MAY
-      carry less, provided the protocol limits an attacker to a bounded
-      number of online guesses and prevents offline testing against
-      recorded traffic [RFC6189].
 
    REQ-VERIFY-03: Pre-Installed Identity Optimization  SETTLE SHOULD
       support the use of manufacturer-installed certificates (e.g.,
@@ -499,6 +493,12 @@ Internet-Draft             SETTLE Requirements              October 2026
       already verified, without weakening LNA's protection against
       unauthorized origins.
 
+   REQ-TRANS-05: Interoperability and Agility  SETTLE MUST support
+      cryptographic agility to accommodate future algorithm
+      deprecations, including the transition to post-quantum
+      cryptography, and ensure interoperability between independent
+      vendor implementations.  The transition also affects the OOB
+
 
 
 Sweet & De Backker        Expires 6 April 2027                  [Page 9]
@@ -506,11 +506,6 @@ Sweet & De Backker        Expires 6 April 2027                  [Page 9]
 Internet-Draft             SETTLE Requirements              October 2026
 
 
-   REQ-TRANS-05: Interoperability and Agility  SETTLE MUST support
-      cryptographic agility to accommodate future algorithm
-      deprecations, including the transition to post-quantum
-      cryptography, and ensure interoperability between independent
-      vendor implementations.  The transition also affects the OOB
       Ceremony (REQ-VERIFY-02): post-quantum public keys are too large
       to carry conveniently in a QR code, and PAKEs in current use, such
       as SPAKE2 [RFC9382], rely on the discrete logarithm problem.
@@ -539,6 +534,11 @@ Internet-Draft             SETTLE Requirements              October 2026
    The following table lists the use cases that chiefly motivate each
    requirement.  "All" marks a requirement that follows from the problem
    statement and is not specific to a use case.
+
+
+
+
+
 
 
 
