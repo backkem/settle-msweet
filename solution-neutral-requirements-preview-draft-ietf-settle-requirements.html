@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>SEcure access To Tls Local rEsources (SETTLE) Problem Statement and Requirements</title>
+<meta content="Michael Sweet" name="author">
+<meta content="Michiel De Backker" name="author">
+<meta content="
+       This document defines the problem statement, common terminology, security models, and technical requirements for identifying, validating, and establishing secure connections with local network devices. It outlines the challenges of extending the Web's Public Key Infrastructure (PKI) to local, offline, or &quot;limited domain&quot; environments. The document specifies requirements for privacy-preserving discovery, generating and distributing local trust anchors, and establishing mutually authenticated secure contexts without relying on global certificate authorities or problematic Trust On First Use (TOFU) mechanisms. 
+    " name="description">
+<meta content="xml2rfc 3.35.0" name="generator">
+<meta content="REQUIREMENTS" name="keyword">
+<meta content="TLS" name="keyword">
+<meta content="LOCAL" name="keyword">
+<meta content="draft-sweet-settle-requirements-00" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.35.0
+    Python 3.14.4
+    ConfigArgParse 1.9.0
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.1.3
+    natsort 8.4.0
+    platformdirs 4.14.3
+    pycountry 26.2.16
+    PyYAML 6.0.3
+    requests 2.32.5
+    wcwidth 0.9.4
+-->
+<link href="draft-ietf-settle-requirements.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">/*
+
+  NOTE: Changes at the bottom of this file overrides some earlier settings.
+
+  Once the style has stabilized and has been adopted as an official RFC style,
+  this can be consolidated so that style settings occur only in one place, but
+  for now the contents of this file consists first of the initial CSS work as
+  provided to the RFC Formatter (xml2rfc) work, followed by itemized and
+  commented changes found necessary during the development of the v3
+  formatters.
+
+*/
+
+/* fonts */
+@import url('https://static.ietf.org/fonts/noto-sans/import.css'); /* Sans-serif */
+@import url('https://static.ietf.org/fonts/noto-serif/import.css'); /* Serif (print) */
+@import url('https://static.ietf.org/fonts/roboto-mono/import.css'); /* Monospace */
+
+:root {
+  --font-sans: 'Noto Sans', Arial, Helvetica, sans-serif;
+  --font-serif: 'Noto Serif', 'Times', 'Times New Roman', serif;
+  --font-mono: 'Roboto Mono', Courier, 'Courier New', monospace;
+}
+
+@viewport {
+  zoom: 1.0;
+}
+@-ms-viewport {
+  width: extend-to-zoom;
+  zoom: 1.0;
+}
+/* general and mobile first */
+html {
+}
+body {
+  max-width: 90%;
+  margin: 1.5em auto;
+  color: #222;
+  background-color: #fff;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  scroll-behavior: smooth;
+  overflow-wrap: break-word;
+}
+.ears {
+  display: none;
+}
+
+/* headings */
+#title, h1, h2, h3, h4, h5, h6 {
+  margin: 1em 0 0.5em;
+  font-weight: bold;
+  line-height: 1.3;
+}
+#title {
+  clear: both;
+  border-bottom: 1px solid #ddd;
+  margin: 0 0 0.5em 0;
+  padding: 1em 0 0.5em;
+}
+.author {
+  padding-bottom: 4px;
+}
+h1 {
+  font-size: 26px;
+  margin: 1em 0;
+}
+h2 {
+  font-size: 22px;
+  margin-top: -20px;  /* provide offset for in-page anchors */
+  padding-top: 33px;
+}
+h3 {
+  font-size: 18px;
+  margin-top: -36px;  /* provide offset for in-page anchors */
+  padding-top: 42px;
+}
+h4 {
+  font-size: 16px;
+  margin-top: -36px;  /* provide offset for in-page anchors */
+  padding-top: 42px;
+}
+h5, h6 {
+  font-size: 14px;
+}
+#n-copyright-notice {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 1em;
+  margin-bottom: 1em;
+}
+/* general structure */
+p {
+  padding: 0;
+  margin: 0 0 1em 0;
+  text-align: left;
+}
+div, span {
+  position: relative;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  padding: 1em 1em 0;
+  margin-bottom: 1.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+@media print {
+  svg {
+    max-height: 850px;
+    max-width: 660px;
+  }
+}
+svg[font-family~="serif" i], svg [font-family~="serif" i] {
+  font-family: var(--font-serif);
+}
+svg[font-family~="sans-serif" i], svg [font-family~="sans-serif" i] {
+  font-family: var(--font-sans);
+}
+svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
+  font-family: var(--font-mono);
+}
+.alignCenter.art-text {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  padding: 1em 1em 0;
+  margin-bottom: 1.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  display: table;
+  border: none;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 1em 2em;
+}
+ol ol, ul ul, ol ul, ul ol {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+ul.ulBare, li.ulBare {
+  margin-left: 0em !important;
+}
+ul.compact, .ulCompact,
+ol.compact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+/* 
+dl.nohang > dt {
+  float: none;
+}
+*/
+dl > dd {
+  margin-bottom: .8em;
+  min-height: 1.3em;
+}
+dl.compact > dd, .dlCompact > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+
+/* links */
+a {
+  text-decoration: none;
+}
+a[href] {
+  color: #22e; /* Arlen: WCAG 2019 */
+}
+a[href]:hover {
+  background-color: #f2f2f2;
+}
+figcaption a[href],
+a[href].selfRef {
+  color: #222;
+}
+/* XXX probably not this:
+a.selfRef:hover {
+  background-color: transparent;
+  cursor: default;
+} */
+
+/* Figures */
+tt, code, pre {
+  background-color: #f9f9f9;
+  font-family: var(--font-mono);
+}
+pre {
+  border: 1px solid #eee;
+  margin: 0;
+  padding: 1em;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption {
+  font-style: italic;
+  margin: 0 0 1em 0;
+}
+@media screen {
+  pre {
+    overflow-x: auto;
+    max-width: 100%;
+    max-width: calc(100% - 22px);
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 1.2em 2em;
+}
+blockquote {
+  background-color: #f9f9f9;
+  color: #111; /* Arlen: WCAG 2019 */
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  margin: 1em 0;
+}
+blockquote > *:last-child {
+  margin-bottom: 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+.xref {
+  overflow-wrap: normal;
+}
+
+/* tables */
+table {
+  width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  border: 1px solid #eee;
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5em 0.75em;
+}
+th {
+  text-align: left;
+  background-color: #e9e9e9;
+}
+tr:nth-child(2n+1) > td {
+  background-color: #f5f5f5;
+}
+table caption {
+  font-style: italic;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+table p {
+  /* XXX to avoid bottom margin on table row signifiers. If paragraphs should
+     be allowed within tables more generally, it would be far better to select on a class. */
+  margin: 0;
+}
+sub,
+sup {
+ white-space: nowrap;
+}
+
+/* pilcrow */
+a.pilcrow {
+  color: #666; /* Arlen: AHDJ 2019 */
+  text-decoration: none;
+  visibility: hidden;
+  user-select: none;
+  -ms-user-select: none;
+  -o-user-select:none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+@media screen {
+  aside:hover > a.pilcrow,
+  p:hover > a.pilcrow,
+  blockquote:hover > a.pilcrow,
+  div:hover > a.pilcrow,
+  li:hover > a.pilcrow,
+  pre:hover > a.pilcrow {
+    visibility: visible;
+  }
+  a.pilcrow:hover {
+    background-color: transparent;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid #eee;
+}
+.bcp14 {
+  font-variant: small-caps;
+}
+
+.role {
+  font-variant: all-small-caps;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: 0.9em;
+}
+#identifiers dt {
+  width: 3em;
+  clear: left;
+}
+#identifiers dd {
+  float: left;
+  margin-bottom: 0;
+}
+/* Fix PDF info block run off issue */
+@media print {
+  #identifiers dd {
+    max-width: 100%;
+  }
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #666; /* Arlen: WCAG 2019 */
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc  {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+nav.toc ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+nav.toc li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.refSubseries {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+.index ul {
+  margin: 0 0 0 1em;
+  padding: 0;
+  list-style: none;
+}
+.index ul ul {
+  margin: 0;
+}
+.index li {
+  margin: 0;
+  text-indent: -2em;
+  padding-left: 2em;
+  padding-bottom: 5px;
+}
+.indexIndex {
+  margin: 0.5em 0 1em;
+}
+.index a {
+  font-weight: 700;
+}
+/* make the index two-column on all but the smallest screens */
+@media (min-width: 600px) {
+  .index ul {
+    -moz-column-count: 2;
+    -moz-column-gap: 20px;
+  }
+  .index ul ul {
+    -moz-column-count: 1;
+    -moz-column-gap: 0;
+  }
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  font-family: var(--font-sans);
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+
+/* temporary notes */
+.rfcEditorRemove::before {
+  position: absolute;
+  top: 0.2em;
+  right: 0.2em;
+  padding: 0.2em;
+  content: "The RFC Editor will remove this note";
+  color: #9e2a00; /* Arlen: WCAG 2019 */
+  background-color: #ffd; /* Arlen: WCAG 2019 */
+}
+.rfcEditorRemove {
+  position: relative;
+  padding-top: 1.8em;
+  background-color: #ffd; /* Arlen: WCAG 2019 */
+  border-radius: 3px;
+}
+.cref {
+  background-color: #ffd; /* Arlen: WCAG 2019 */
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 1023px) {
+  body {
+    padding-top: 2em;
+  }
+  #title {
+    padding: 1em 0;
+  }
+  h1 {
+    font-size: 24px;
+  }
+  h2 {
+    font-size: 20px;
+    margin-top: -18px;  /* provide offset for in-page anchors */
+    padding-top: 38px;
+  }
+  #identifiers dd {
+    max-width: 60%;
+  }
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    background-color: inherit;
+    border-bottom: 1px solid #ccc;
+  }
+  #toc h2 {
+    margin: -1px 0 0 0;
+    padding: 4px 0 4px 6px;
+    padding-right: 1em;
+    min-width: 190px;
+    font-size: 1.1em;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 6px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 1024px) {
+  body {
+    max-width: 724px;
+    margin: 42px auto;
+    padding-left: 1.5em;
+    padding-right: 29em;
+  }
+  #toc {
+    position: fixed;
+    top: 42px;
+    right: 42px;
+    width: 25%;
+    margin: 0;
+    padding: 0 1em;
+    z-index: 1;
+  }
+  #toc h2 {
+    border-top: none;
+    border-bottom: 1px solid #ddd;
+    font-size: 1em;
+    font-weight: normal;
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 0;
+    overflow: auto;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  .breakable pre {
+    break-inside: auto;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+/* This is commented out here, as the string-set: doesn't
+   pass W3C validation currently */
+/*
+.ears thead .left {
+  string-set: ears-top-left content();
+}
+
+.ears thead .center {
+  string-set: ears-top-center content();
+}
+
+.ears thead .right {
+  string-set: ears-top-right content();
+}
+
+.ears tfoot .left {
+  string-set: ears-bottom-left content();
+}
+
+.ears tfoot .center {
+  string-set: ears-bottom-center content();
+}
+
+.ears tfoot .right {
+  string-set: ears-bottom-right content();
+}
+*/
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+  /* The following is commented out here, but set appropriately by in code, as
+     the content depends on the document */
+  /*
+  @top-left {
+    content: 'Internet-Draft';
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-left {
+    content: string(ears-top-left);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-center {
+    content: string(ears-top-center);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @top-right {
+    content: string(ears-top-right);
+    vertical-align: bottom;
+    border-bottom: solid 1px #ccc;
+  }
+  @bottom-left {
+    content: string(ears-bottom-left);
+    vertical-align: top;
+    border-top: solid 1px #ccc;
+  }
+  @bottom-center {
+    content: string(ears-bottom-center);
+    vertical-align: top;
+    border-top: solid 1px #ccc;
+  }
+  @bottom-right {
+      content: '[Page ' counter(page) ']';
+      vertical-align: top;
+      border-top: solid 1px #ccc;
+  }
+  */
+
+}
+
+/* Changes introduced to fix issues found during implementation */
+/* Make sure links are clickable even if overlapped by following H* */
+a {
+  z-index: 2;
+}
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Leave room in document info to show Internet-Draft on one line */
+#identifiers dt {
+  width: 8em;
+}
+
+/* Don't waste quite as much whitespace between label and value in doc info */
+#identifiers dd {
+  margin-left: 1em;
+}
+
+/* Give floating toc a background color (needed when it's a div inside section */
+#toc {
+  background-color: white;
+}
+
+/* Make the collapsed ToC header render white on gray also when it's a link */
+@media screen and (max-width: 1023px) {
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+}
+
+/* Give the bottom of the ToC some whitespace */
+@media screen and (min-width: 1024px) {
+  #toc {
+    padding: 0 0 1em 1em;
+  }
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* prevent monospace from becoming overly large */
+tt, code, pre {
+  font-size: 95%;
+}
+
+/* Fix the height/width aspect for ascii art*/
+.sourcecode pre,
+.art-text pre {
+  line-height: 1.12;
+}
+
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin-right: 0.5em;
+}
+
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table td.text-left,
+table th.text-left {
+  text-align: left;
+}
+table td.text-center,
+table th.text-center {
+  text-align: center;
+}
+table td.text-right,
+table th.text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 30em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Provide table alignment support.  We can't use the alignX classes above
+   since they do unwanted things with caption and other styling. */
+table.right {
+ margin-left: auto;
+ margin-right: 0;
+}
+table.center {
+ margin-left: auto;
+ margin-right: auto;
+}
+table.left {
+ margin-left: 0;
+ margin-right: auto;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+caption a[href] {
+  color: #222;
+}
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+/* Tweak the bcp14 keyword presentation */
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+/* Tweak the invisible space above H* in order not to overlay links in text above */
+ h2 {
+  margin-top: -18px;  /* provide offset for in-page anchors */
+  padding-top: 31px;
+ }
+ h3 {
+  margin-top: -18px;  /* provide offset for in-page anchors */
+  padding-top: 24px;
+ }
+ h4 {
+  margin-top: -18px;  /* provide offset for in-page anchors */
+  padding-top: 24px;
+ }
+/* Float artwork pilcrow to the right */
+@media screen {
+  .artwork a.pilcrow {
+    display: block;
+    line-height: 0.7;
+    margin-top: 0.15em;
+  }
+}
+/* Make pilcrows on dd visible */
+@media screen {
+  dd:hover > a.pilcrow {
+    visibility: visible;
+  }
+}
+/* Make the placement of figcaption match that of a table's caption
+   by removing the figure's added bottom margin */
+.alignLeft.art-text,
+.alignCenter.art-text,
+.alignRight.art-text {
+   margin-bottom: 0;
+}
+.alignLeft,
+.alignCenter,
+.alignRight {
+  margin: 1em 0 0 0;
+}
+/* In print, the pilcrow won't show on hover, so prevent it from taking up space,
+   possibly even requiring a new line */
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+/* Styling for the external metadata */
+div#external-metadata {
+  background-color: #eee;
+  padding: 0.5em;
+  margin-bottom: 0.5em;
+  display: none;
+}
+div#internal-metadata {
+  padding: 0.5em;                       /* to match the external-metadata padding */
+}
+/* Styling for title RFC Number */
+h1#rfcnum {
+  clear: both;
+  margin: 0 0 -1em;
+  padding: 1em 0 0 0;
+}
+/* Make .olPercent look the same as <ol><li> */
+dl.olPercent > dd {
+  margin-bottom: 0.25em;
+  min-height: initial;
+}
+/* Give aside some styling to set it apart */
+aside {
+  border-left: 1px solid #ddd;
+  margin: 1em 0 1em 2em;
+  padding: 0.2em 2em;
+}
+aside > dl,
+aside > ol,
+aside > ul,
+aside > table,
+aside > p {
+  margin-bottom: 0.5em;
+}
+/* Additional page break settings */
+@media print {
+  figcaption, table caption {
+    page-break-before: avoid;
+  }
+  table {
+    page-break-inside: avoid;
+  }
+}
+/* Font size adjustments for print */
+@media print {
+  body  { font-size: 10pt;      line-height: normal; max-width: 96%; }
+  h1    { font-size: 1.72em;    padding-top: 1.5em; } /* 1*1.2*1.2*1.2 */
+  h2    { font-size: 1.44em;    padding-top: 1.5em; } /* 1*1.2*1.2 */
+  h3    { font-size: 1.2em;     padding-top: 1.5em; } /* 1*1.2 */
+  h4    { font-size: 1em;       padding-top: 1.5em; }
+  h5, h6 { font-size: 1em;      margin: initial; padding: 0.5em 0 0.3em; }
+}
+/* Sourcecode margin in print, when there's no pilcrow */
+@media print {
+  .artwork,
+  .artwork > pre,
+  .sourcecode {
+    margin-bottom: 1em;
+  }
+}
+/* Avoid narrow tables forcing too narrow table captions, which may render badly */
+table {
+  min-width: 20em;
+}
+/* ol type a */
+ol.type-a { list-style-type: lower-alpha; }
+ol.type-A { list-style-type: upper-alpha; }
+ol.type-i { list-style-type: lower-roman; }
+ol.type-I { list-style-type: upper-roman; }
+/* Apply the print table and row borders in general, on request from the RPC,
+and increase the contrast between border and odd row background slightly */
+table {
+  border: 1px solid #ddd;
+}
+td {
+  border-top: 1px solid #ddd;
+}
+tr {
+  break-inside: avoid;
+}
+tr:nth-child(2n+1) > td {
+  background-color: #f8f8f8;
+}
+/* Use style rules to govern display of the TOC. */
+@media screen and (max-width: 1023px) {
+  #toc nav { display: none; }
+  #toc.active nav { display: block; }
+}
+/* Add support for keepWithNext */
+.keepWithNext {
+  break-after: avoid-page;
+  break-after: avoid-page;
+}
+/* Add support for keepWithPrevious */
+.keepWithPrevious {
+  break-before: avoid-page;
+}
+/* Change the approach to avoiding breaks inside artwork etc. */
+figure, pre, table, .artwork, .sourcecode  {
+  break-before: auto;
+  break-after: auto;
+}
+/* Avoid breaks between <dt> and <dd> */
+dl {
+  break-before: auto;
+  break-inside: auto;
+}
+dt {
+  break-before: auto;
+  break-after: avoid-page;
+}
+dd {
+  break-before: avoid-page;
+  break-after: auto;
+  orphans: 3;
+  widows: 3
+}
+span.break, dd.break {
+  margin-bottom: 0;
+  min-height: 0;
+  break-before: auto;
+  break-inside: auto;
+  break-after: auto;
+}
+/* Undo break-before ToC */
+@media print {
+  #toc {
+    break-before: auto;
+  }
+}
+/* Text in compact lists should not get extra bottom margin space,
+   since that would makes the list not compact */
+ul.compact p, .ulCompact p,
+ol.compact p, .olCompact p {
+ margin: 0;
+}
+/* But the list as a whole needs the extra space at the end */
+section ul.compact,
+section .ulCompact,
+section ol.compact,
+section .olCompact {
+  margin-bottom: 1em;                    /* same as p not within ul.compact etc. */
+}
+/* The tt and code background above interferes with for instance table cell
+   backgrounds.  Changed to something a bit more selective. */
+tt, code {
+  background-color: transparent;
+}
+p tt, p code, li tt, li code, dt tt, dt code {
+  background-color: #f8f8f8;
+}
+/* Tweak the pre margin -- 0px doesn't come out well */
+pre {
+   margin-top: 0.5px;
+}
+/* Tweak the compact list text */
+ul.compact, .ulCompact,
+ol.compact, .olCompact,
+dl.compact, .dlCompact {
+  line-height: normal;
+}
+/* Don't add top margin for nested lists */
+li > ul, li > ol, li > dl,
+dd > ul, dd > ol, dd > dl,
+dl > dd > dl {
+  margin-top: initial;
+}
+/* Elements that should not be rendered on the same line as a <dt> */
+/* This should match the element list in writer.text.TextWriter.render_dl() */
+dd > div.artwork:first-child,
+dd > aside:first-child,
+dd > blockquote:first-child,
+dd > figure:first-child,
+dd > ol:first-child,
+dd > div.sourcecode:first-child,
+dd > table:first-child,
+dd > ul:first-child {
+  clear: left;
+}
+/* fix for weird browser behaviour when <dd/> is empty */
+dt+dd:empty::before{
+  content: "\00a0";
+}
+/* Make paragraph spacing inside <li> smaller than in body text, to fit better within the list */
+li > p {
+  margin-bottom: 0.5em
+}
+/* Don't let p margin spill out from inside list items */
+li > p:last-of-type:only-child {
+  margin-bottom: 0;
+}
+</style>
+<link href="rfc-local.css" rel="stylesheet" type="text/css">
+<script type="application/javascript">async function addMetadata(){try{const e=document.styleSheets[0].cssRules;for(let t=0;t<e.length;t++)if(/#identifiers/.exec(e[t].selectorText)){const a=e[t].cssText.replace("#identifiers","#external-updates");document.styleSheets[0].insertRule(a,document.styleSheets[0].cssRules.length)}}catch(e){console.log(e)}const e=document.getElementById("external-metadata");if(e)try{var t,a="",o=function(e){const t=document.getElementsByTagName("meta");for(let a=0;a<t.length;a++)if(t[a].getAttribute("name")===e)return t[a].getAttribute("content");return""}("rfc.number");if(o){t="https://www.rfc-editor.org/rfc/rfc"+o+".json";try{const e=await fetch(t);a=await e.json()}catch(e){t=document.URL.indexOf("html")>=0?document.URL.replace(/html$/,"json"):document.URL+".json";const o=await fetch(t);a=await o.json()}}if(!a)return;e.style.display="block";const s="",d="https://datatracker.ietf.org/doc",n="https://datatracker.ietf.org/ipr/search",c="https://www.rfc-editor.org/info",l=a.doc_id.toLowerCase(),i=a.doc_id.slice(0,3).toLowerCase(),f=a.doc_id.slice(3).replace(/^0+/,""),u={status:"Status",obsoletes:"Obsoletes",obsoleted_by:"Obsoleted By",updates:"Updates",updated_by:"Updated By",see_also:"See Also",errata_url:"Errata"};let h="<dl style='overflow:hidden' id='external-updates'>";["status","obsoletes","obsoleted_by","updates","updated_by","see_also","errata_url"].forEach(e=>{if("status"==e){a[e]=a[e].toLowerCase();var t=a[e].split(" "),o=t.length,w="",p=1;for(let e=0;e<o;e++)p<o?w=w+r(t[e])+" ":w+=r(t[e]),p++;a[e]=w}else if("obsoletes"==e||"obsoleted_by"==e||"updates"==e||"updated_by"==e){var g,m="",b=1;g=a[e].length;for(let t=0;t<g;t++)a[e][t]&&(a[e][t]=String(a[e][t]).toLowerCase(),m=b<g?m+"<a href='"+s+"/rfc/".concat(a[e][t])+"'>"+a[e][t].slice(3)+"</a>, ":m+"<a href='"+s+"/rfc/".concat(a[e][t])+"'>"+a[e][t].slice(3)+"</a>",b++);a[e]=m}else if("see_also"==e){var y,L="",C=1;y=a[e].length;for(let t=0;t<y;t++)if(a[e][t]){a[e][t]=String(a[e][t]);var _=a[e][t].slice(0,3),v=a[e][t].slice(3).replace(/^0+/,"");L=C<y?"RFC"!=_?L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+_+" "+v+"</a>, ":L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+v+"</a>, ":"RFC"!=_?L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+_+" "+v+"</a>":L+"<a href='"+s+"/info/"+_.toLowerCase().concat(v.toLowerCase())+"'>"+v+"</a>",C++}a[e]=L}else if("errata_url"==e){var R="";R=a[e]?R+"<a href='"+a[e]+"'>Errata exist</a> | <a href='"+d+"/"+l+"'>Datatracker</a>| <a href='"+n+"/?"+i+"="+f+"&submit="+i+"'>IPR</a> | <a href='"+c+"/"+l+"'>Info page</a>":"<a href='"+d+"/"+l+"'>Datatracker</a> | <a href='"+n+"/?"+i+"="+f+"&submit="+i+"'>IPR</a> | <a href='"+c+"/"+l+"'>Info page</a>",a[e]=R}""!=a[e]?"Errata"==u[e]?h+=`<dt>More info:</dt><dd>${a[e]}</dd>`:h+=`<dt>${u[e]}:</dt><dd>${a[e]}</dd>`:"Errata"==u[e]&&(h+=`<dt>More info:</dt><dd>${a[e]}</dd>`)}),h+="</dl>",e.innerHTML=h}catch(e){console.log(e)}else console.log("Could not locate metadata <div> element");function r(e){return e.charAt(0).toUpperCase()+e.slice(1)}}window.removeEventListener("load",addMetadata),window.addEventListener("load",addMetadata);</script>
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">SETTLE Requirements</td>
+<td class="right">October 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Sweet &amp; De Backker</td>
+<td class="center">Expires 6 April 2027</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">SETTLE</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-sweet-settle-requirements-00</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-10-03" class="published">3 October 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Informational</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2027-04-06">6 April 2027</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">M. Sweet, <span class="editor">Ed.</span>
+</div>
+<div class="org">Lakeside Robotics Corporation</div>
+</div>
+<div class="author">
+      <div class="author-name">M. De Backker, <span class="editor">Ed.</span>
+</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">SEcure access To Tls Local rEsources (SETTLE) Problem Statement and Requirements</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document defines the problem statement, common terminology, security models, and technical requirements for identifying, validating, and establishing secure connections with local network devices. It outlines the challenges of extending the Web's Public Key Infrastructure (PKI) to local, offline, or "limited domain" environments. The document specifies requirements for privacy-preserving discovery, generating and distributing local trust anchors, and establishing mutually authenticated secure contexts without relying on global certificate authorities or problematic Trust On First Use (TOFU) mechanisms.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 6 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-overview-and-goals" class="internal xref">Overview and Goals</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-requirements" class="internal xref">Requirements</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-naming-and-discovery-req-na" class="internal xref">Naming and Discovery (REQ-NAME)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-verification-and-bootstrapp" class="internal xref">Verification and Bootstrapping (REQ-VERIFY)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-protocol-and-transport-req-" class="internal xref">Protocol and Transport (REQ-TRANS)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-architecture-and-management" class="internal xref">Architecture and Management (REQ-ARCH)</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-evil-twin-and-network-imper" class="internal xref">Evil Twin and Network Impersonation</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-compromise-of-the-referee" class="internal xref">Compromise of the Referee</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-social-engineering-and-supp" class="internal xref">Social Engineering and Support Scams</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="auto internal xref">5.4</a>.  <a href="#name-confused-deputy-attacks" class="internal xref">Confused Deputy Attacks</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.5">
+                <p id="section-toc.1-1.5.2.5.1"><a href="#section-5.5" class="auto internal xref">5.5</a>.  <a href="#name-factory-reset-incompletenes" class="internal xref">Factory Reset Incompleteness</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.6">
+                <p id="section-toc.1-1.5.2.6.1"><a href="#section-5.6" class="auto internal xref">5.6</a>.  <a href="#name-supply-chain-attacks" class="internal xref">Supply Chain Attacks</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.7">
+                <p id="section-toc.1-1.5.2.7.1"><a href="#section-5.7" class="auto internal xref">5.7</a>.  <a href="#name-denial-of-service" class="internal xref">Denial of Service</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-privacy-considerations" class="internal xref">Privacy Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-prior-art-and-related-work" class="internal xref">Prior Art and Related Work</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-change-history" class="internal xref">Change History</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-C" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">Local networks have historically used a mix of encrypted and unencrypted communications with no common method to establish trust. Access is provided to those who have the Wi-Fi password or an Ethernet cable, and the connected device simply trusts the information provided to it by the DHCP service or Router Advertisements on that network. In contrast, the Internet increasingly uses encrypted communications with a well-regulated system of Certificate Authorities, Domain Name Providers, Address Registries, and distributed Domain Name Services that form the basis of trust on the "modern web."<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">With the advent of HTTPS everywhere, browsers disadvantage web services using unencrypted communications by requiring a Secure Context for features such as Direct Sockets, Geolocation, Service Workers, Web Bluetooth, WebCrypto, WebTransport, and WebRTC. The concept of "Limited Domains" <span>[<a href="#RFC8799" class="cite xref">RFC8799</a>]</span> encapsulates these local, constrained environments, but existing web security models struggle to adapt to them. Furthermore, modern browser security models, such as Local Network Access (LNA) <span>[<a href="#WICG.LNA" class="cite xref">WICG.LNA</a>]</span>, restrict public websites from making requests to private IP addresses without explicit secure contexts and user permissions.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">Existing deployments of TLS on local networks typically use "self-signed" X.509 certificates that lack the endorsement of a trusted party, relying instead on Trust on First Use (TOFU) mechanisms. Because the client User Agent lacks a cryptographic trust anchor for the Infrastructure Device, it presents a "scary" certificate warning. Users frequently disregard these warnings, leading to warning fatigue and leaving them vulnerable to active interception. Conversely, network devices are unable to determine the trustworthiness of the local network, humorous solutions such as the "evil bit" from <span>[<a href="#RFC3514" class="cite xref">RFC3514</a>]</span> aside.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">This document defines common terminology and requirements for discovering, identifying, validating, and establishing secure connections with local network devices without relying on Trust On First Use (TOFU) or continuous Internet connectivity. Importantly, nothing here will help determine whether a network or network device is actually trustworthy, merely that it possesses a verifiable identity.<a href="#section-1-4" class="pilcrow">¶</a></p>
+</section>
+<section id="section-2">
+      <h2 id="name-terminology">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+      </h2>
+<p id="section-2-1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-2-2">
+        <dt id="section-2-2.1">Bootstrapping:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.2">The process of establishing an initial trust relationship and secure communication channel between a User Agent and a Device where no prior relationship exists.<a href="#section-2-2.2" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.3">Certificate Authority:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.4">A party or service <span>[<a href="#RFC8555" class="cite xref">RFC8555</a>]</span> that provides Cryptographic Identities that are signed by one or more Trust Anchors for the purpose of establishing trust <span>[<a href="#RFC5280" class="cite xref">RFC5280</a>]</span>.<a href="#section-2-2.4" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.5">Client Device:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.6">A Device used primarily by End Users to access services, e.g., a smartphone, a laptop, a tablet.<a href="#section-2-2.6" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.7">Client Identity:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.8">A Cryptographic Identity bound to a Client Device that has been signed by a Trust Anchor.<a href="#section-2-2.8" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.9">Cryptographic Identity:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.10">A persistent, cryptographically verifiable identifier, e.g., an X.509 public key infrastructure certificate <span>[<a href="#RFC5280" class="cite xref">RFC5280</a>]</span>.<a href="#section-2-2.10" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.11">Device:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.12">An entity with a network interface that connects to a local network.<a href="#section-2-2.12" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.13">Device Identity:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.14">A Cryptographic Identifier bound to a specific Device. This may be derived from a hardware manufacturer root, e.g., Initial Device Identifier, IDevID <span>[<a href="#IEEE.802.1AR" class="cite xref">IEEE.802.1AR</a>]</span>, or locally generated value.<a href="#section-2-2.14" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.15">Device Name:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.16">A DNS or mDNS label for a Device.<a href="#section-2-2.16" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.17">Infrastructure Device:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.18">A Device providing a service on the local network, e.g., a printer, a router, an IoT hub.<a href="#section-2-2.18" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.19">Infrastructure Identity:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.20">A Cryptographic Identity bound to an Infrastructure Device that has been signed by a Trust Anchor.<a href="#section-2-2.20" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.21">Local Certificate Authority:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.22">A Certificate Authority for the local network.<a href="#section-2-2.22" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.23">Local Trust Anchor:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.24">A Trust Anchor for the local network.<a href="#section-2-2.24" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.25">Origin Server:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.26">A program that can originate authoritative responses for a given target resource <span>[<a href="#RFC9110" class="cite xref">RFC9110</a>]</span>, e.g. a web server..<a href="#section-2-2.26" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.27">Out-of-Band (OOB) Ceremony:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.28">A mechanism for transferring trust entropy via a channel physically separate from the network. [MOVE THIS: Different mechanisms offer varying security properties, including QR codes (visual, high entropy), PIN entry (manual, low entropy), Short Authentication Strings (SAS), Near Field Communication (NFC), or Push-Button Configuration (PBC).]<a href="#section-2-2.28" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.29">Protected Communications:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.30">Communications between two Devices whose Identities have been verified and use methods such as cryptography to protect any data from eavesdropping or undetected modification.<a href="#section-2-2.30" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.31">Referee (Local Manager):</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.32">An Infrastructure Device that is designated as the trust broker for the local network, for example by acting as the Local Certificate Authority. Other Devices are then trusted through the Referee, which typically turns a mesh of unverified Devices into a hub-and-spoke trust topology.<a href="#section-2-2.32" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.33">Secure Context:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.34">An environment meeting the minimum standards of authentication and confidentiality as defined by the W3C Secure Contexts specification <span>[<a href="#W3C.SecureContexts" class="cite xref">W3C.SecureContexts</a>]</span>.<a href="#section-2-2.34" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.35">Trust Anchor:</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.36">A Cryptographic Identity that is trusted by a Client Device and/or UA.<a href="#section-2-2.36" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.37">Trust On First Use (TOFU):</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.38">An approach where a Client Device and/or UA accepts the first Cryptographic Identity presented by an Infrastructure Device or Origin Server. The identity is sometimes confirmed by an End User before acceptance.<a href="#section-2-2.38" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-2-2.39">User Agent (UA):</dt>
+        <dd style="margin-left: 1.5em" id="section-2-2.40">A client program that initiates a request to an Origin Server <span>[<a href="#RFC9110" class="cite xref">RFC9110</a>]</span>, e.g., a web browser.<a href="#section-2-2.40" class="pilcrow">¶</a>
+</dd>
+      <dd class="break"></dd>
+</dl>
+</section>
+<section id="section-3">
+      <h2 id="name-overview-and-goals">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-overview-and-goals" class="section-name selfRef">Overview and Goals</a>
+      </h2>
+<p id="section-3-1">SEcure access To Tls Local rEsources (SETTLE) <span>[<a href="#SETTLE" class="cite xref">SETTLE</a>]</span> is concerned with enabling Protected Communications within any Zero-Trust Local Area Network. Protected Communications typically are implemented using TLS <span>[<a href="#RFC9846" class="cite xref">RFC9846</a>]</span> with X.509 certificates <span>[<a href="#RFC5280" class="cite xref">RFC5280</a>]</span> signed by a known Trust Anchor. Importantly, SETTLE does not deal with the notion of trustworthiness (authentication, authorization, access control, and/or attestation) or Users but instead is focused on the more basic issues of Device Identity verification and the use of a Local Certificate Authority and Trust Anchor to permit local autonomous operation without an active connection to the Internet.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-2">The goals of SETTLE include:<a href="#section-3-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3-3.1">
+          <strong>Autonomous/Semi-Autonomous Operation:</strong> Allow Devices to connect and obtain credentials automatically whenever possible.<a href="#section-3-3.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-3-3.2">
+          <strong>Common Connection/Policy Support:</strong>: Make it possible for Devices to better adapt and participate on LANs with different capabilities and/or policies, particularly home vs. enterprise networks.<a href="#section-3-3.2" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-3-3.3">
+          <strong>Improved Security:</strong> Eliminate the use of TOFU policies for IoT Devices by using X.509 certificates that a User Agent can verify through locally established trust, such as a Local Trust Anchor.<a href="#section-3-3.3" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-3-3.4">
+          <strong>Improved User Experience:</strong> Enable normal HTTPS access to Devices such as cameras, printers, routers, etc. using a standard User Agent such as a web browser.<a href="#section-3-3.4" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="section-3-3.5">
+          <strong>Standalone Operation:</strong> Do not require an Internet connection to function. Obviously there could be cloud/distributed/managed solutions but the core architecture/protocols do not require it.<a href="#section-3-3.5" class="pilcrow">¶</a>
+</li>
+      </ul>
+</section>
+<section id="section-4">
+      <h2 id="name-requirements">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-requirements" class="section-name selfRef">Requirements</a>
+      </h2>
+<p id="section-4-1">In this section, "SETTLE" refers to the solution, or set of solutions, that meets these requirements. The requirements state properties such a solution needs to have and do not select a protocol or an architecture: a mechanism introduced by "such as" or "e.g." is an example, not a choice. A requirement to support a capability, such as a Referee (REQ-ARCH-02) or a manufacturer-installed identity (REQ-VERIFY-03), means that the capability is available to deployments that need it, not that every Device or deployment uses it.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<section id="section-4.1">
+        <h3 id="name-naming-and-discovery-req-na">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-naming-and-discovery-req-na" class="section-name selfRef">Naming and Discovery (REQ-NAME)</a>
+        </h3>
+<span class="break"></span><dl class="dlParallel" id="section-4.1-1">
+          <dt id="section-4.1-1.1">REQ-NAME-01: Unique Identifiers</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-1.2">SETTLE MUST provide a mechanism to assign unique Device Names. A Device Name MUST be unique within its discovery scope, such as the local link, and SHOULD be globally unique. Independently administered networks may still reuse a name; SETTLE MUST ensure that such a collision does not let one Device impersonate another or undermine trust relationships already established. To prevent collisions, names SHOULD incorporate high-entropy device-specific data, such as MAC addresses <span>[<a href="#I-D.housley-lamps-macaddress-on" class="cite xref">I-D.housley-lamps-macaddress-on</a>]</span> or public key hashes <span>[<a href="#I-D.wing-settle-public-key-hash" class="cite xref">I-D.wing-settle-public-key-hash</a>]</span>.<a href="#section-4.1-1.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-1.3">REQ-NAME-02: Local Namespace Compatibility</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-1.4">Device Names MUST utilize standardized namespaces reserved for local or non-DNS use to ensure broad client support. Valid namespaces include ".local" for mDNS <span>[<a href="#RFC6762" class="cite xref">RFC6762</a>]</span>, "home.arpa." for unicast DNS <span>[<a href="#RFC8375" class="cite xref">RFC8375</a>]</span>, or ".alt" <span>[<a href="#RFC9476" class="cite xref">RFC9476</a>]</span>.<a href="#section-4.1-1.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-1.5">REQ-NAME-03: Independence from Global DNS</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-1.6">Device Name resolution MUST NOT depend on the availability of global DNS infrastructure.<a href="#section-4.1-1.6" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-1.7">REQ-NAME-04: Standardized Discovery</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-1.8">SETTLE MUST utilize standard local discovery protocols, such as DNS-Based Service Discovery (DNS-SD) <span>[<a href="#RFC6763" class="cite xref">RFC6763</a>]</span>, Unicast Local Discovery (ULD) <span>[<a href="#I-D.ietf-dnssd-uld" class="cite xref">I-D.ietf-dnssd-uld</a>]</span>, or Captive Portal APIs <span>[<a href="#RFC8910" class="cite xref">RFC8910</a>]</span>, to locate Devices prior to authentication. Discovery records MAY carry transport-security parameters such as a certificate fingerprint <span>[<a href="#I-D.liu-add-dnssd-edns" class="cite xref">I-D.liu-add-dnssd-edns</a>]</span>, but these are unauthenticated hints and MUST NOT be treated as a Trust Anchor distribution channel (REQ-VERIFY-01).<a href="#section-4.1-1.8" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-1.9">REQ-NAME-05: Privacy-Preserving Discovery</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-1.10">The discovery mechanism MUST prevent passive tracking of Devices or Users. SETTLE MUST NOT broadcast static identifiers (like MAC addresses or static account hashes) in plaintext if the Device is portable. Rotating identifiers and cryptographic mechanisms like Private Set Intersection (PSI) are examples of how this can be achieved. See <span>[<a href="#RFC8882" class="cite xref">RFC8882</a>]</span> for an analysis of discovery privacy requirements.<a href="#section-4.1-1.10" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+<section id="section-4.2">
+        <h3 id="name-verification-and-bootstrapp">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-verification-and-bootstrapp" class="section-name selfRef">Verification and Bootstrapping (REQ-VERIFY)</a>
+        </h3>
+<span class="break"></span><dl class="dlParallel" id="section-4.2-1">
+          <dt id="section-4.2-1.1">REQ-VERIFY-01: Rejection of Network TOFU</dt>
+          <dd style="margin-left: 1.5em" id="section-4.2-1.2">SETTLE MUST NOT rely on automatic Trust On First Use (TOFU) executed exclusively over the local network interface for initial authentication.<a href="#section-4.2-1.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.2-1.3">REQ-VERIFY-02: Out-of-Band (OOB) Ceremony</dt>
+          <dd style="margin-left: 1.5em" id="section-4.2-1.4">SETTLE MUST define or profile an OOB mechanism to transfer verification entropy when a suitable Device Identity is not available. OOB material that directly authenticates a key, such as a key hash in a QR code, MUST provide at least 128 bits of entropy to resist offline attacks. OOB material consumed by a PAKE or a commit-and-compare ceremony, such as a PIN or a Short Authentication String, MAY carry less, provided the protocol limits an attacker to a bounded number of online guesses and prevents offline testing against recorded traffic <span>[<a href="#RFC6189" class="cite xref">RFC6189</a>]</span>.<a href="#section-4.2-1.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.2-1.5">REQ-VERIFY-03: Pre-Installed Identity Optimization</dt>
+          <dd style="margin-left: 1.5em" id="section-4.2-1.6">SETTLE SHOULD support the use of manufacturer-installed certificates (e.g., IDevID <span>[<a href="#IEEE.802.1AR" class="cite xref">IEEE.802.1AR</a>]</span>, <span>[<a href="#I-D.irtf-t2trg-taxonomy-manufacturer-anchors" class="cite xref">I-D.irtf-t2trg-taxonomy-manufacturer-anchors</a>]</span>). When used, SETTLE MUST define a mechanism (e.g., Vouchers <span>[<a href="#RFC8366" class="cite xref">RFC8366</a>]</span>) to cryptographically bind the manufacturer-provided identity to the user-facing Device Name.<a href="#section-4.2-1.6" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.2-1.7">REQ-VERIFY-04: Dynamic Local Trust Store</dt>
+          <dd style="margin-left: 1.5em" id="section-4.2-1.8">User Agents MUST support a Local Trust Anchor. Depending on the trust store, a locally installed WebPKI trust anchor can confer authority over any DNS name. A Local Trust Anchor MUST instead be limited to the local namespaces of REQ-NAME-02, and the User Agent MUST enforce that limit itself, since path validation may ignore name constraints carried in a self-signed trust anchor <span>[<a href="#RFC6818" class="cite xref">RFC6818</a>]</span>.<a href="#section-4.2-1.8" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+<section id="section-4.3">
+        <h3 id="name-protocol-and-transport-req-">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-protocol-and-transport-req-" class="section-name selfRef">Protocol and Transport (REQ-TRANS)</a>
+        </h3>
+<span class="break"></span><dl class="dlParallel" id="section-4.3-1">
+          <dt id="section-4.3-1.1">REQ-TRANS-01: Modern Transport Security</dt>
+          <dd style="margin-left: 1.5em" id="section-4.3-1.2">All communications requiring a secure context MUST utilize TLS 1.3 <span>[<a href="#RFC9846" class="cite xref">RFC9846</a>]</span> or equivalent modern transport security protocols.<a href="#section-4.3-1.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.3-1.3">REQ-TRANS-02: Implicit TLS Preference</dt>
+          <dd style="margin-left: 1.5em" id="section-4.3-1.4">To minimize downgrade attacks, the system SHOULD utilize Implicit TLS (connect-then-handshake) rather than connection-upgrade mechanisms (e.g., STARTTLS) <span>[<a href="#RFC8314" class="cite xref">RFC8314</a>]</span>.<a href="#section-4.3-1.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.3-1.5">REQ-TRANS-03: Subject Alternative Name (SAN) Matching</dt>
+          <dd style="margin-left: 1.5em" id="section-4.3-1.6">Device certificates MUST populate the Subject Alternative Name (SAN) extension. User Agents MUST verify these identities in accordance with <span>[<a href="#RFC9525" class="cite xref">RFC9525</a>]</span>. TLS profiles for constrained Devices, such as <span>[<a href="#I-D.ietf-uta-tls13-iot-profile" class="cite xref">I-D.ietf-uta-tls13-iot-profile</a>]</span>, can apply in addition.<a href="#section-4.3-1.6" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.3-1.7">REQ-TRANS-04: Browser Policy Compatibility</dt>
+          <dd style="margin-left: 1.5em" id="section-4.3-1.8">SETTLE MUST work within browser Local Network Access (LNA) policies <span>[<a href="#WICG.LNA" class="cite xref">WICG.LNA</a>]</span>. Devices MUST be able to serve certificates that validate under SETTLE's trust model, so that a connection permitted under LNA also yields a Secure Context. SETTLE SHOULD make the trust it establishes available to User Agents as an input to LNA decisions, so that browsers can reduce redundant prompts for Devices the User has already verified, without weakening LNA's protection against unauthorized origins.<a href="#section-4.3-1.8" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.3-1.9">REQ-TRANS-05: Interoperability and Agility</dt>
+          <dd style="margin-left: 1.5em" id="section-4.3-1.10">SETTLE MUST support cryptographic agility to accommodate future algorithm deprecations, including the transition to post-quantum cryptography, and ensure interoperability between independent vendor implementations. The transition also affects the OOB Ceremony (REQ-VERIFY-02): post-quantum public keys are too large to carry conveniently in a QR code, and PAKEs in current use, such as SPAKE2 <span>[<a href="#RFC9382" class="cite xref">RFC9382</a>]</span>, rely on the discrete logarithm problem.<a href="#section-4.3-1.10" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+<section id="section-4.4">
+        <h3 id="name-architecture-and-management">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-architecture-and-management" class="section-name selfRef">Architecture and Management (REQ-ARCH)</a>
+        </h3>
+<span class="break"></span><dl class="dlParallel" id="section-4.4-1">
+          <dt id="section-4.4-1.1">REQ-ARCH-01: Standalone Operation</dt>
+          <dd style="margin-left: 1.5em" id="section-4.4-1.2">SETTLE MUST operate securely without requiring Internet connectivity.<a href="#section-4.4-1.2" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.4-1.3">REQ-ARCH-02: Referee / Delegation Support</dt>
+          <dd style="margin-left: 1.5em" id="section-4.4-1.4">SETTLE MUST support a delegated local trust model where a mutually authenticated Referee can vouch for Devices, for example by issuing credentials to them, so that a Client Device does not need a separate OOB Ceremony (REQ-VERIFY-02) for each Device.<a href="#section-4.4-1.4" class="pilcrow">¶</a>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.4-1.5">REQ-ARCH-03: Device Lifecycle and Key Rotation</dt>
+          <dd style="margin-left: 1.5em" id="section-4.4-1.6">SETTLE MUST provide mechanisms for routine key rotation, certificate renewal without user intervention, and trust revocation. A factory reset of a Device MUST erase the private keys, credentials, and trust bindings from its prior enrollment, other than a manufacturer-installed identity. A reset cannot remove trust bindings held by other Devices, only make them obsolete, so SETTLE MUST define how those Devices handle an obsolete binding, including when they were offline at the time of the reset.<a href="#section-4.4-1.6" class="pilcrow">¶</a>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</section>
+<section id="section-5">
+      <h2 id="name-security-considerations">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<section id="section-5.1">
+        <h3 id="name-evil-twin-and-network-imper">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-evil-twin-and-network-imper" class="section-name selfRef">Evil Twin and Network Impersonation</a>
+        </h3>
+<p id="section-5.1-1">An attacker may clone a local Wi-Fi access point (Evil Twin), spoof BSSIDs, or poison mDNS caches to redirect traffic to a malicious endpoint. Because SETTLE mandates an OOB Ceremony (REQ-VERIFY-02) and rejects pure TOFU, the UA will detect the certificate mismatch and abort the connection, neutralizing the impersonation.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+</section>
+<section id="section-5.2">
+        <h3 id="name-compromise-of-the-referee">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-compromise-of-the-referee" class="section-name selfRef">Compromise of the Referee</a>
+        </h3>
+<p id="section-5.2-1">The Referee acts as the root of trust for the local network. If the Referee is compromised, the attacker can issue trusted certificates for any name within the local namespace, enabling widespread MITM attacks against the UA. Clients SHOULD scope Referee trust to the explicit local namespace.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+</section>
+<section id="section-5.3">
+        <h3 id="name-social-engineering-and-supp">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-social-engineering-and-supp" class="section-name selfRef">Social Engineering and Support Scams</a>
+        </h3>
+<p id="section-5.3-1">If installing trust anchors is made significantly easier, malicious actors (e.g., fake "customer support") may instruct users to scan a malicious QR code, thereby installing a rogue trust anchor. UAs MUST provide clear, unambiguous UI warnings during the OOB ceremony about the implications of trusting a new device or Referee.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+</section>
+<section id="section-5.4">
+        <h3 id="name-confused-deputy-attacks">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-confused-deputy-attacks" class="section-name selfRef">Confused Deputy Attacks</a>
+        </h3>
+<p id="section-5.4-1">Public websites often attempt to use the browser as a "confused deputy" to attack local network devices via Cross-Site Request Forgery (CSRF). Local Network Access (REQ-TRANS-04) addresses this directly by requiring the User's permission before a public site can reach the local network. Verifying a Client Identity complements it, letting a Device also reject permitted requests that are not authenticated.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+</section>
+<section id="section-5.5">
+        <h3 id="name-factory-reset-incompletenes">
+<a href="#section-5.5" class="section-number selfRef">5.5. </a><a href="#name-factory-reset-incompletenes" class="section-name selfRef">Factory Reset Incompleteness</a>
+        </h3>
+<p id="section-5.5-1">Research into IoT protocols has shown that hardware factory resets frequently fail to clear all administrative fabrics or ACLs, leaving devices vulnerable to prior owners. REQ-ARCH-03 mandates that a factory reset MUST completely destroy all cryptographic material linking the device to prior local trust domains.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
+</section>
+<section id="section-5.6">
+        <h3 id="name-supply-chain-attacks">
+<a href="#section-5.6" class="section-number selfRef">5.6. </a><a href="#name-supply-chain-attacks" class="section-name selfRef">Supply Chain Attacks</a>
+        </h3>
+<p id="section-5.6-1">When utilizing Pre-Installed Trust (IDevID), a compromised manufacturer or stolen batch of private keys allows an attacker to masquerade as a legitimate device. UAs SHOULD support mechanisms to constrain manufacturer trust to specific scopes or require secondary local validation. Manufacturer Usage Description <span>[<a href="#RFC8520" class="cite xref">RFC8520</a>]</span> can bound what a compromised Device may reach once joined, but does not help establish trust.<a href="#section-5.6-1" class="pilcrow">¶</a></p>
+</section>
+<section id="section-5.7">
+        <h3 id="name-denial-of-service">
+<a href="#section-5.7" class="section-number selfRef">5.7. </a><a href="#name-denial-of-service" class="section-name selfRef">Denial of Service</a>
+        </h3>
+<p id="section-5.7-1">Local networks are vulnerable to resource exhaustion. Malicious peers may flood the network with mDNS advertisements, initiate thousands of TLS handshakes, or attempt to exhaust certificate enrollment limits (e.g., attacking a local ACME server). Implementations SHOULD employ rate-limiting and prioritize OOB-authenticated traffic. Carrying handshake material over multicast discovery amplifies this, since every listener on the link must parse each unsolicited flight.<a href="#section-5.7-1" class="pilcrow">¶</a></p>
+</section>
+</section>
+<section id="section-6">
+      <h2 id="name-privacy-considerations">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-privacy-considerations" class="section-name selfRef">Privacy Considerations</a>
+      </h2>
+<p id="section-6-1">In accordance with <span>[<a href="#RFC6973" class="cite xref">RFC6973</a>]</span>, privacy vulnerabilities in local networks must be considered.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<p id="section-6-2"><strong>Device Tracking:</strong> Utilizing MAC addresses or static hardware identifiers in Local Device Names (e.g., mDNS broadcasts) allows passive observers on the local network to track device presence and infer user behavior. Portable devices SHOULD utilize privacy-preserving, rotating identifiers.<a href="#section-6-2" class="pilcrow">¶</a></p>
+<p id="section-6-3"><strong>Account-Scoped Identifiers:</strong> Embedding account-level UUIDs into local certificates (as seen in some proprietary local sharing protocols) allows devices belonging to the same user to be correlated by passive observers. Device identities MUST be scoped to the device itself, not a global user account, unless protected by an encrypted transport.<a href="#section-6-3" class="pilcrow">¶</a></p>
+<p id="section-6-4"><strong>Hash-Based Contact Leaks:</strong> Transmitting truncated hashes of contact information (e.g., phone numbers or emails) for mutual discovery is vulnerable to brute-force reversal. Implementations prioritizing privacy SHOULD utilize Private Set Intersection (PSI) <span>[<a href="#PrivateDrop" class="cite xref">PrivateDrop</a>]</span> or similar cryptographic techniques for discovery.<a href="#section-6-4" class="pilcrow">¶</a></p>
+<p id="section-6-5"><strong>Discovery-Channel Metadata:</strong> Anything in a discovery record is readable by every listener on the link. A certificate fingerprint advertised in a TXT record or SVCB parameter is a stable identifier and defeats the rotating identifiers REQ-NAME-05 asks of portable Devices. Handshake material carried on the discovery channel reveals that a pairing attempt is under way even when encrypted, and its length can identify the service sought, which is why <span>[<a href="#I-D.huitema-dnssd-tls-privacy" class="cite xref">I-D.huitema-dnssd-tls-privacy</a>]</span> pads it to a fixed size.<a href="#section-6-5" class="pilcrow">¶</a></p>
+</section>
+<section id="section-7">
+      <h2 id="name-iana-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-7-1">This document has no IANA actions.<a href="#section-7-1" class="pilcrow">¶</a></p>
+</section>
+<section id="section-8">
+      <h2 id="name-normative-references">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+      </h2>
+<dl class="references">
+<dt id="RFC2119">[RFC2119]</dt>
+      <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2119">https://www.rfc-editor.org/info/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3927">[RFC3927]</dt>
+      <dd>
+<span class="refAuthor">Cheshire, S.</span>, <span class="refAuthor">Aboba, B.</span>, and <span class="refAuthor">E. Guttman</span>, <span class="refTitle">"Dynamic Configuration of IPv4 Link-Local Addresses"</span>, <span class="seriesInfo">RFC 3927</span>, <span class="seriesInfo">DOI 10.17487/RFC3927</span>, <time datetime="2005-05" class="refDate">May 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc3927">https://www.rfc-editor.org/info/rfc3927</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC4193">[RFC4193]</dt>
+      <dd>
+<span class="refAuthor">Hinden, R.</span> and <span class="refAuthor">B. Haberman</span>, <span class="refTitle">"Unique Local IPv6 Unicast Addresses"</span>, <span class="seriesInfo">RFC 4193</span>, <span class="seriesInfo">DOI 10.17487/RFC4193</span>, <time datetime="2005-10" class="refDate">October 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc4193">https://www.rfc-editor.org/info/rfc4193</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5280">[RFC5280]</dt>
+      <dd>
+<span class="refAuthor">Cooper, D.</span>, <span class="refAuthor">Santesson, S.</span>, <span class="refAuthor">Farrell, S.</span>, <span class="refAuthor">Boeyen, S.</span>, <span class="refAuthor">Housley, R.</span>, and <span class="refAuthor">W. Polk</span>, <span class="refTitle">"Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile"</span>, <span class="seriesInfo">RFC 5280</span>, <span class="seriesInfo">DOI 10.17487/RFC5280</span>, <time datetime="2008-05" class="refDate">May 2008</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5280">https://www.rfc-editor.org/info/rfc5280</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6762">[RFC6762]</dt>
+      <dd>
+<span class="refAuthor">Cheshire, S.</span> and <span class="refAuthor">M. Krochmal</span>, <span class="refTitle">"Multicast DNS"</span>, <span class="seriesInfo">RFC 6762</span>, <span class="seriesInfo">DOI 10.17487/RFC6762</span>, <time datetime="2013-02" class="refDate">February 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6762">https://www.rfc-editor.org/info/rfc6762</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6763">[RFC6763]</dt>
+      <dd>
+<span class="refAuthor">Cheshire, S.</span> and <span class="refAuthor">M. Krochmal</span>, <span class="refTitle">"DNS-Based Service Discovery"</span>, <span class="seriesInfo">RFC 6763</span>, <span class="seriesInfo">DOI 10.17487/RFC6763</span>, <time datetime="2013-02" class="refDate">February 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6763">https://www.rfc-editor.org/info/rfc6763</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+      <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8174">https://www.rfc-editor.org/info/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8375">[RFC8375]</dt>
+      <dd>
+<span class="refAuthor">Pfister, P.</span> and <span class="refAuthor">T. Lemon</span>, <span class="refTitle">"Special-Use Domain 'home.arpa.'"</span>, <span class="seriesInfo">RFC 8375</span>, <span class="seriesInfo">DOI 10.17487/RFC8375</span>, <time datetime="2018-05" class="refDate">May 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8375">https://www.rfc-editor.org/info/rfc8375</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9110">[RFC9110]</dt>
+      <dd>
+<span class="refAuthor">Fielding, R., Ed.</span>, <span class="refAuthor">Nottingham, M., Ed.</span>, and <span class="refAuthor">J. Reschke, Ed.</span>, <span class="refTitle">"HTTP Semantics"</span>, <span class="seriesInfo">STD 97</span>, <span class="seriesInfo">RFC 9110</span>, <span class="seriesInfo">DOI 10.17487/RFC9110</span>, <time datetime="2022-06" class="refDate">June 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9110">https://www.rfc-editor.org/info/rfc9110</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9476">[RFC9476]</dt>
+      <dd>
+<span class="refAuthor">Kumari, W.</span> and <span class="refAuthor">P. Hoffman</span>, <span class="refTitle">"The .alt Special-Use Top-Level Domain"</span>, <span class="seriesInfo">RFC 9476</span>, <span class="seriesInfo">DOI 10.17487/RFC9476</span>, <time datetime="2023-09" class="refDate">September 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9476">https://www.rfc-editor.org/info/rfc9476</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9525">[RFC9525]</dt>
+      <dd>
+<span class="refAuthor">Saint-Andre, P.</span> and <span class="refAuthor">R. Salz</span>, <span class="refTitle">"Service Identity in TLS"</span>, <span class="seriesInfo">RFC 9525</span>, <span class="seriesInfo">DOI 10.17487/RFC9525</span>, <time datetime="2023-11" class="refDate">November 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9525">https://www.rfc-editor.org/info/rfc9525</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9846">[RFC9846]</dt>
+    <dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="seriesInfo">RFC 9846</span>, <span class="seriesInfo">DOI 10.17487/RFC9846</span>, <time datetime="2026-07" class="refDate">July 2026</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9846">https://www.rfc-editor.org/info/rfc9846</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+<section id="section-9">
+      <h2 id="name-informative-references">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+      </h2>
+<dl class="references">
+<dt id="DPP">[DPP]</dt>
+      <dd>
+<span class="refAuthor">Wi-Fi Alliance</span>, <span class="refTitle">"Device Provisioning Protocol Specification, Version 3.0"</span>, <time datetime="2023" class="refDate">2023</time>, <span>&lt;<a href="https://www.wi-fi.org/discover-wi-fi/wi-fi-easy-connect">https://www.wi-fi.org/discover-wi-fi/wi-fi-easy-connect</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.housley-lamps-macaddress-on">[I-D.housley-lamps-macaddress-on]</dt>
+      <dd>
+<span class="refAuthor">Housley, R.</span>, <span class="refTitle">"MAC Address in X.509 Certificate otherName"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-housley-lamps-macaddress-on</span>, <time datetime="2026" class="refDate">2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-housley-lamps-macaddress-on">https://datatracker.ietf.org/doc/html/draft-housley-lamps-macaddress-on</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.huitema-dnssd-tls-privacy">[I-D.huitema-dnssd-tls-privacy]</dt>
+      <dd>
+<span class="refAuthor">Huitema, C.</span> and <span class="refAuthor">D. Kaiser</span>, <span class="refTitle">"Private Discovery with TLS-ESNI"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-huitema-dnssd-tls-privacy-01</span>, <time datetime="2019-03" class="refDate">March 2019</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-huitema-dnssd-tls-privacy">https://datatracker.ietf.org/doc/html/draft-huitema-dnssd-tls-privacy</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-anima-brski-prm">[I-D.ietf-anima-brski-prm]</dt>
+      <dd>
+<span class="refAuthor">Fries, S.</span>, <span class="refAuthor">Werner, T.</span>, <span class="refAuthor">Lear, E.</span>, and <span class="refAuthor">M. Richardson</span>, <span class="refTitle">"BRSKI with Pledge in Responder Mode (BRSKI-PRM)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-anima-brski-prm-23</span>, <time datetime="2024" class="refDate">2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-anima-brski-prm">https://datatracker.ietf.org/doc/html/draft-ietf-anima-brski-prm</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-dnssd-uld">[I-D.ietf-dnssd-uld]</dt>
+      <dd>
+<span class="refAuthor">Lemon, T.</span> and <span class="refAuthor">K. Sperling</span>, <span class="refTitle">"Providing Local Unicast DNS-SD Service on Infrastructure"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-dnssd-uld-00</span>, <time datetime="2026-08" class="refDate">August 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-dnssd-uld">https://datatracker.ietf.org/doc/html/draft-ietf-dnssd-uld</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-emu-bootstrapped-tls">[I-D.ietf-emu-bootstrapped-tls]</dt>
+      <dd>
+<span class="refAuthor">Friel, O.</span> and <span class="refAuthor">D. Harkins</span>, <span class="refTitle">"Bootstrapped TLS Authentication with Proof of Knowledge"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-emu-bootstrapped-tls-07</span>, <time datetime="2024" class="refDate">2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-emu-bootstrapped-tls">https://datatracker.ietf.org/doc/html/draft-ietf-emu-bootstrapped-tls</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-tls-pake">[I-D.ietf-tls-pake]</dt>
+      <dd>
+<span class="refAuthor">Hoyland, J.</span> and <span class="refAuthor">O. Friel</span>, <span class="refTitle">"TLS 1.3 Extension for Password-Authenticated Key Exchange"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-tls-pake-00</span>, <time datetime="2025-09" class="refDate">September 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-tls-pake">https://datatracker.ietf.org/doc/html/draft-ietf-tls-pake</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.ietf-uta-tls13-iot-profile">[I-D.ietf-uta-tls13-iot-profile]</dt>
+      <dd>
+<span class="refAuthor">Fossati, T.</span> and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"TLS/DTLS 1.3 Profiles for the Internet of Things"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-uta-tls13-iot-profile-11</span>, <time datetime="2024" class="refDate">2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-uta-tls13-iot-profile">https://datatracker.ietf.org/doc/html/draft-ietf-uta-tls13-iot-profile</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.irtf-t2trg-taxonomy-manufacturer-anchors">[I-D.irtf-t2trg-taxonomy-manufacturer-anchors]</dt>
+      <dd>
+<span class="refAuthor">Richardson, M.</span>, <span class="refTitle">"Taxonomy of Manufacturer-Installed Trust Anchors"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-t2trg-taxonomy-manufacturer-anchors</span>, <time datetime="2024" class="refDate">2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-t2trg-taxonomy-manufacturer-anchors">https://datatracker.ietf.org/doc/html/draft-irtf-t2trg-taxonomy-manufacturer-anchors</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.liu-add-dnssd-edns">[I-D.liu-add-dnssd-edns]</dt>
+      <dd>
+<span class="refAuthor">Liu, D.</span>, <span class="refAuthor">Yan, Z.</span>, <span class="refAuthor">Geng, G.</span>, and <span class="refAuthor">G. Zeng</span>, <span class="refTitle">"DNS-Based Service Discovery for Encrypted DNS Services"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-liu-add-dnssd-edns-02</span>, <time datetime="2026-03" class="refDate">March 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-liu-add-dnssd-edns">https://datatracker.ietf.org/doc/html/draft-liu-add-dnssd-edns</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.sweet-iot-acme">[I-D.sweet-iot-acme]</dt>
+      <dd>
+<span class="refAuthor">Sweet, M.</span>, <span class="refTitle">"ACME-Based Provisioning of IoT Devices"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-sweet-iot-acme-07</span>, <time datetime="2025-02" class="refDate">February 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-sweet-iot-acme">https://datatracker.ietf.org/doc/html/draft-sweet-iot-acme</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.wing-settle-public-key-hash">[I-D.wing-settle-public-key-hash]</dt>
+      <dd>
+<span class="refAuthor">Wing, D.</span>, <span class="refTitle">"Public Key Hash for Local Domains"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-wing-settle-public-key-hash-01</span>, <time datetime="2025" class="refDate">2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-wing-settle-public-key-hash">https://datatracker.ietf.org/doc/html/draft-wing-settle-public-key-hash</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.wing-settle-referee">[I-D.wing-settle-referee]</dt>
+      <dd>
+<span class="refAuthor">Wing, D.</span>, <span class="refTitle">"A Referee to Authenticate Servers in Local Domains"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-wing-settle-referee-00</span>, <time datetime="2025-01" class="refDate">January 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-wing-settle-referee">https://datatracker.ietf.org/doc/html/draft-wing-settle-referee</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="IEEE.802.1AR">[IEEE.802.1AR]</dt>
+      <dd>
+<span class="refAuthor">IEEE</span>, <span class="refTitle">"IEEE Standard for Local and Metropolitan Area Networks - Secure Device Identity"</span>, <span class="seriesInfo">IEEE 802.1AR-2018</span>, <time datetime="2018" class="refDate">2018</time>, <span>&lt;<a href="https://standards.ieee.org/ieee/802.1AR/7436/">https://standards.ieee.org/ieee/802.1AR/7436/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="Matter">[Matter]</dt>
+      <dd>
+<span class="refAuthor">Connectivity Standards Alliance</span>, <span class="refTitle">"Matter Specification, Version 1.4"</span>, <time datetime="2024" class="refDate">2024</time>, <span>&lt;<a href="https://csa-iot.org/all-solutions/matter/">https://csa-iot.org/all-solutions/matter/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="PionDTLSmDNS">[PionDTLSmDNS]</dt>
+      <dd>
+<span class="refAuthor">pion</span>, <span class="refTitle">"Implement sync HandshakeConn API, with an example carrying a DTLS handshake over mDNS"</span>, <span class="refContent">pion/dtls commit fd43549</span>, <time datetime="2026-09" class="refDate">September 2026</time>, <span>&lt;<a href="https://github.com/pion/dtls/commit/fd43549314dc0cf8637167cd5af7ffb521951d80">https://github.com/pion/dtls/commit/fd43549314dc0cf8637167cd5af7ffb521951d80</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="PrivateDrop">[PrivateDrop]</dt>
+      <dd>
+<span class="refAuthor">Heinrich, A.</span>, <span class="refAuthor">Hollick, M.</span>, <span class="refAuthor">Schneider, T.</span>, <span class="refAuthor">Stute, M.</span>, and <span class="refAuthor">C. Weinert</span>, <span class="refTitle">"PrivateDrop: Practical Privacy-Preserving Authentication for Apple AirDrop"</span>, <span class="seriesInfo">USENIX Security 2021</span>, <time datetime="2021-08" class="refDate">August 2021</time>, <span>&lt;<a href="https://www.usenix.org/conference/usenixsecurity21/presentation/heinrich">https://www.usenix.org/conference/usenixsecurity21/presentation/heinrich</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2693">[RFC2693]</dt>
+      <dd>
+<span class="refAuthor">Ellison, C.</span>, <span class="refAuthor">Frantz, B.</span>, <span class="refAuthor">Lampson, B.</span>, <span class="refAuthor">Rivest, R.</span>, <span class="refAuthor">Thomas, B.</span>, and <span class="refAuthor">T. Ylonen</span>, <span class="refTitle">"SPKI Certificate Theory"</span>, <span class="seriesInfo">RFC 2693</span>, <span class="seriesInfo">DOI 10.17487/RFC2693</span>, <time datetime="1999-09" class="refDate">September 1999</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc2693">https://www.rfc-editor.org/info/rfc2693</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3514">[RFC3514]</dt>
+      <dd>
+<span class="refAuthor">Bellovin, S.</span>, <span class="refTitle">"The Security Flag in the IPv4 Header"</span>, <span class="seriesInfo">RFC 3514</span>, <span class="seriesInfo">DOI 10.17487/RFC3514</span>, <time datetime="2003-04" class="refDate">April 2003</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc3514">https://www.rfc-editor.org/info/rfc3514</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC4255">[RFC4255]</dt>
+      <dd>
+<span class="refAuthor">Schlyter, J.</span> and <span class="refAuthor">W. Griffin</span>, <span class="refTitle">"Using DNS to Securely Publish Secure Shell (SSH) Key Fingerprints"</span>, <span class="seriesInfo">RFC 4255</span>, <span class="seriesInfo">DOI 10.17487/RFC4255</span>, <time datetime="2006-01" class="refDate">January 2006</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc4255">https://www.rfc-editor.org/info/rfc4255</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6189">[RFC6189]</dt>
+      <dd>
+<span class="refAuthor">Zimmermann, P.</span>, <span class="refAuthor">Johnston, A., Ed.</span>, and <span class="refAuthor">J. Callas</span>, <span class="refTitle">"ZRTP: Media Path Key Agreement for Unicast Secure RTP"</span>, <span class="seriesInfo">RFC 6189</span>, <span class="seriesInfo">DOI 10.17487/RFC6189</span>, <time datetime="2011-04" class="refDate">April 2011</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6189">https://www.rfc-editor.org/info/rfc6189</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6698">[RFC6698]</dt>
+      <dd>
+<span class="refAuthor">Hoffman, P.</span> and <span class="refAuthor">J. Schlyter</span>, <span class="refTitle">"The DNS-Based Authentication of Named Entities (DANE) Transport Layer Security (TLS) Protocol: TLSA"</span>, <span class="seriesInfo">RFC 6698</span>, <span class="seriesInfo">DOI 10.17487/RFC6698</span>, <time datetime="2012-08" class="refDate">August 2012</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6698">https://www.rfc-editor.org/info/rfc6698</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6818">[RFC6818]</dt>
+      <dd>
+<span class="refAuthor">Yee, P.</span>, <span class="refTitle">"Updates to the Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile"</span>, <span class="seriesInfo">RFC 6818</span>, <span class="seriesInfo">DOI 10.17487/RFC6818</span>, <time datetime="2013-01" class="refDate">January 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6818">https://www.rfc-editor.org/info/rfc6818</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC6973">[RFC6973]</dt>
+      <dd>
+<span class="refAuthor">Cooper, A.</span>, <span class="refAuthor">Tschofenig, H.</span>, <span class="refAuthor">Aboba, B.</span>, <span class="refAuthor">Peterson, J.</span>, <span class="refAuthor">Morris, J.</span>, <span class="refAuthor">Hansen, M.</span>, and <span class="refAuthor">R. Smith</span>, <span class="refTitle">"Privacy Considerations for Internet Protocols"</span>, <span class="seriesInfo">RFC 6973</span>, <span class="seriesInfo">DOI 10.17487/RFC6973</span>, <time datetime="2013-07" class="refDate">July 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc6973">https://www.rfc-editor.org/info/rfc6973</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7030">[RFC7030]</dt>
+      <dd>
+<span class="refAuthor">Pritikin, M., Ed.</span>, <span class="refAuthor">Yee, P., Ed.</span>, and <span class="refAuthor">D. Harkins, Ed.</span>, <span class="refTitle">"Enrollment over Secure Transport"</span>, <span class="seriesInfo">RFC 7030</span>, <span class="seriesInfo">DOI 10.17487/RFC7030</span>, <time datetime="2013-10" class="refDate">October 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7030">https://www.rfc-editor.org/info/rfc7030</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7435">[RFC7435]</dt>
+      <dd>
+<span class="refAuthor">Dukhovni, V.</span>, <span class="refTitle">"Opportunistic Security: Some Protection Most of the Time"</span>, <span class="seriesInfo">RFC 7435</span>, <span class="seriesInfo">DOI 10.17487/RFC7435</span>, <time datetime="2014-12" class="refDate">December 2014</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc7435">https://www.rfc-editor.org/info/rfc7435</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8314">[RFC8314]</dt>
+      <dd>
+<span class="refAuthor">Moore, K.</span> and <span class="refAuthor">C. Newman</span>, <span class="refTitle">"Cleartext Considered Obsolete: Use of Transport Layer Security (TLS) for Email Submission and Access"</span>, <span class="seriesInfo">RFC 8314</span>, <span class="seriesInfo">DOI 10.17487/RFC8314</span>, <time datetime="2018-01" class="refDate">January 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8314">https://www.rfc-editor.org/info/rfc8314</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8366">[RFC8366]</dt>
+      <dd>
+<span class="refAuthor">Watsen, K.</span>, <span class="refAuthor">Richardson, M.</span>, <span class="refAuthor">Pritikin, M.</span>, and <span class="refAuthor">T. Eckert</span>, <span class="refTitle">"A Voucher Artifact for Bootstrapping Protocols"</span>, <span class="seriesInfo">RFC 8366</span>, <span class="seriesInfo">DOI 10.17487/RFC8366</span>, <time datetime="2018-05" class="refDate">May 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8366">https://www.rfc-editor.org/info/rfc8366</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8520">[RFC8520]</dt>
+      <dd>
+<span class="refAuthor">Lear, E.</span>, <span class="refAuthor">Droms, R.</span>, and <span class="refAuthor">D. Romascanu</span>, <span class="refTitle">"Manufacturer Usage Description Specification"</span>, <span class="seriesInfo">RFC 8520</span>, <span class="seriesInfo">DOI 10.17487/RFC8520</span>, <time datetime="2019-03" class="refDate">March 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8520">https://www.rfc-editor.org/info/rfc8520</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8555">[RFC8555]</dt>
+      <dd>
+<span class="refAuthor">Barnes, R.</span>, <span class="refAuthor">Hoffman-Andrews, J.</span>, <span class="refAuthor">McCarney, D.</span>, and <span class="refAuthor">J. Kasten</span>, <span class="refTitle">"Automatic Certificate Management Environment (ACME)"</span>, <span class="seriesInfo">RFC 8555</span>, <span class="seriesInfo">DOI 10.17487/RFC8555</span>, <time datetime="2019-03" class="refDate">March 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8555">https://www.rfc-editor.org/info/rfc8555</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8799">[RFC8799]</dt>
+      <dd>
+<span class="refAuthor">Carpenter, B.</span> and <span class="refAuthor">B. Liu</span>, <span class="refTitle">"Limited Domains and Internet Protocols"</span>, <span class="seriesInfo">RFC 8799</span>, <span class="seriesInfo">DOI 10.17487/RFC8799</span>, <time datetime="2020-07" class="refDate">July 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8799">https://www.rfc-editor.org/info/rfc8799</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8882">[RFC8882]</dt>
+      <dd>
+<span class="refAuthor">Huitema, C.</span> and <span class="refAuthor">D. Kaiser</span>, <span class="refTitle">"DNS-Based Service Discovery (DNS-SD) Privacy and Security Requirements"</span>, <span class="seriesInfo">RFC 8882</span>, <span class="seriesInfo">DOI 10.17487/RFC8882</span>, <time datetime="2020-09" class="refDate">September 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8882">https://www.rfc-editor.org/info/rfc8882</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8910">[RFC8910]</dt>
+      <dd>
+<span class="refAuthor">Kumari, W.</span> and <span class="refAuthor">E. Kline</span>, <span class="refTitle">"Captive-Portal Identification in DHCP and Router Advertisements (RAs)"</span>, <span class="seriesInfo">RFC 8910</span>, <span class="seriesInfo">DOI 10.17487/RFC8910</span>, <time datetime="2020-09" class="refDate">September 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8910">https://www.rfc-editor.org/info/rfc8910</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8995">[RFC8995]</dt>
+      <dd>
+<span class="refAuthor">Pritikin, M.</span>, <span class="refAuthor">Richardson, M.</span>, <span class="refAuthor">Eckert, T.</span>, <span class="refAuthor">Behringer, M.</span>, and <span class="refAuthor">K. Watsen</span>, <span class="refTitle">"Bootstrapping Remote Secure Key Infrastructure (BRSKI)"</span>, <span class="seriesInfo">RFC 8995</span>, <span class="seriesInfo">DOI 10.17487/RFC8995</span>, <time datetime="2021-05" class="refDate">May 2021</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc8995">https://www.rfc-editor.org/info/rfc8995</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9140">[RFC9140]</dt>
+      <dd>
+<span class="refAuthor">Aura, T.</span>, <span class="refAuthor">Sethi, M.</span>, and <span class="refAuthor">A. Peltonen</span>, <span class="refTitle">"Nimble Out-of-Band Authentication for EAP (EAP-NOOB)"</span>, <span class="seriesInfo">RFC 9140</span>, <span class="seriesInfo">DOI 10.17487/RFC9140</span>, <time datetime="2021-12" class="refDate">December 2021</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9140">https://www.rfc-editor.org/info/rfc9140</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9382">[RFC9382]</dt>
+      <dd>
+<span class="refAuthor">Ladd, W.</span>, <span class="refTitle">"SPAKE2, a Password-Authenticated Key Exchange"</span>, <span class="seriesInfo">RFC 9382</span>, <span class="seriesInfo">DOI 10.17487/RFC9382</span>, <time datetime="2023-09" class="refDate">September 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9382">https://www.rfc-editor.org/info/rfc9382</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9383">[RFC9383]</dt>
+      <dd>
+<span class="refAuthor">Taubert, T.</span> and <span class="refAuthor">C. A. Wood</span>, <span class="refTitle">"SPAKE2+, an Augmented Password-Authenticated Key Exchange (PAKE) Protocol"</span>, <span class="seriesInfo">RFC 9383</span>, <span class="seriesInfo">DOI 10.17487/RFC9383</span>, <time datetime="2023-09" class="refDate">September 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9383">https://www.rfc-editor.org/info/rfc9383</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9460">[RFC9460]</dt>
+      <dd>
+<span class="refAuthor">Schwartz, B.</span>, <span class="refAuthor">Bishop, M.</span>, and <span class="refAuthor">E. Nygren</span>, <span class="refTitle">"Service Binding and Parameter Specification via the DNS (SVCB and HTTPS Resource Records)"</span>, <span class="seriesInfo">RFC 9460</span>, <span class="seriesInfo">DOI 10.17487/RFC9460</span>, <time datetime="2023-11" class="refDate">November 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9460">https://www.rfc-editor.org/info/rfc9460</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SETTLE">[SETTLE]</dt>
+      <dd>
+<span class="refAuthor">IETF</span>, <span class="refTitle">"SEcure access To Tls Local rEsources (settle)"</span>, <time datetime="2026" class="refDate">2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/wg/settle/about/">https://datatracker.ietf.org/wg/settle/about/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="W3C.OpenScreen">[W3C.OpenScreen]</dt>
+      <dd>
+<span class="refAuthor">W3C</span>, <span class="refTitle">"Open Screen Network Protocol"</span>, <span class="seriesInfo">W3C Community Group Report</span>, <time datetime="2024" class="refDate">2024</time>, <span>&lt;<a href="https://www.w3.org/TR/openscreen-network/">https://www.w3.org/TR/openscreen-network/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="W3C.SecureContexts">[W3C.SecureContexts]</dt>
+      <dd>
+<span class="refAuthor">West, M.</span>, <span class="refTitle">"Secure Contexts"</span>, <span class="seriesInfo">W3C Candidate Recommendation CR-secure-contexts</span>, <time datetime="2021-09" class="refDate">September 2021</time>, <span>&lt;<a href="https://w3c.github.io/webappsec-secure-contexts/">https://w3c.github.io/webappsec-secure-contexts/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="W3C.WebTransport">[W3C.WebTransport]</dt>
+      <dd>
+<span class="refAuthor">W3C</span>, <span class="refTitle">"WebTransport"</span>, <span class="seriesInfo">W3C Working Draft</span>, <time datetime="2026" class="refDate">2026</time>, <span>&lt;<a href="https://www.w3.org/TR/webtransport/">https://www.w3.org/TR/webtransport/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="WICG.LNA">[WICG.LNA]</dt>
+      <dd>
+<span class="refAuthor">WICG</span>, <span class="refTitle">"Local Network Access"</span>, <span class="seriesInfo">W3C Draft Community Group Report</span>, <time datetime="2025" class="refDate">2025</time>, <span>&lt;<a href="https://wicg.github.io/local-network-access/">https://wicg.github.io/local-network-access/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="ZookosTriangle">[ZookosTriangle]</dt>
+    <dd>
+<span class="refAuthor">Wilcox-O'Hearn, Z.</span>, <span class="refTitle">"Names: Decentralized, Secure, Human-Meaningful: Choose Two"</span>, <time datetime="2001" class="refDate">2001</time>, <span>&lt;<a href="https://en.wikipedia.org/wiki/Zooko%27s_triangle">https://en.wikipedia.org/wiki/Zooko%27s_triangle</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+<section id="appendix-A">
+      <h2 id="name-prior-art-and-related-work">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-prior-art-and-related-work" class="section-name selfRef">Prior Art and Related Work</a>
+      </h2>
+<p id="appendix-A-1">The SETTLE architecture builds upon and differentiates itself from several existing approaches:<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-A-2.1">
+          <strong>BRSKI and BRSKI-PRM:</strong> Bootstrapping Remote Secure Key Infrastructure <span>[<a href="#RFC8995" class="cite xref">RFC8995</a>]</span> automates provisioning using manufacturer IDevIDs. BRSKI-PRM <span>[<a href="#I-D.ietf-anima-brski-prm" class="cite xref">I-D.ietf-anima-brski-prm</a>]</span> demonstrates the value of <em>object security</em> (signed Vouchers) over transport security for environments where pledges cannot initiate TLS connections. While powerful, BRSKI requires a supply chain root of trust, which is absent in self-hosted consumer scenarios.<a href="#appendix-A-2.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.2">
+          <strong>Matter Protocol:</strong> Matter utilizes Password-Authenticated Session Establishment (PASE) <span>[<a href="#Matter" class="cite xref">Matter</a>]</span>, built on SPAKE2+ <span>[<a href="#RFC9383" class="cite xref">RFC9383</a>]</span>, for onboarding with a 27-bit passcode. A PAKE tolerates a low-entropy passcode when an attacker is limited to online guesses; the flaws reported by security analyses lie in the handling, notably static salts, rather than in the passcode length itself.<a href="#appendix-A-2.2" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.3">
+          <strong>Wi-Fi Easy Connect (DPP):</strong> Uses QR codes containing public keys to bootstrap WPA3 credentials <span>[<a href="#DPP" class="cite xref">DPP</a>]</span>. This provides a strong precedent for OOB ceremonies, though it targets network-layer access rather than application-layer TLS identity.<a href="#appendix-A-2.3" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.4">
+          <strong>Open Screen Protocol:</strong> The W3C Open Screen Network Protocol <span>[<a href="#W3C.OpenScreen" class="cite xref">W3C.OpenScreen</a>]</span> provides a particularly clean construction for local device pairing without pre-shared keys. Devices establish a provisional QUIC/TLS connection using self-signed certificates, then authenticate it via SPAKE2 <span>[<a href="#RFC9382" class="cite xref">RFC9382</a>]</span> bound to a user-transferred PIN. This pattern of "connect first, authenticate via PAKE second" is directly applicable to the OOB Ceremony (REQ-VERIFY-02). Emerging IETF work on integrating PAKEs directly into TLS 1.3 <span>[<a href="#I-D.ietf-tls-pake" class="cite xref">I-D.ietf-tls-pake</a>]</span> may provide a standardized transport for this class of bootstrapping.<a href="#appendix-A-2.4" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.5">
+          <strong>AirDrop / PrivateDrop:</strong> Traditional local discovery using truncated hashes leaks user identifiers. Research into Private Set Intersection (PSI) <span>[<a href="#PrivateDrop" class="cite xref">PrivateDrop</a>]</span> demonstrates that privacy-preserving mutual discovery is feasible with sub-second latency.<a href="#appendix-A-2.5" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.6">
+          <strong>SDSI/SPKI:</strong> Simple Distributed Security Infrastructure <span>[<a href="#RFC2693" class="cite xref">RFC2693</a>]</span> proposed a decentralized PKI binding authorizations directly to keys. While conceptually aligned with local trust, modern web browsers mandate X.509 <span>[<a href="#RFC5280" class="cite xref">RFC5280</a>]</span> for compatibility.<a href="#appendix-A-2.6" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.7">
+          <strong>Local Public Key Hashes:</strong> Approaches that embed public key hashes into local domain names <span>[<a href="#I-D.wing-settle-public-key-hash" class="cite xref">I-D.wing-settle-public-key-hash</a>]</span> offer self-certifying namespaces but sacrifice human-readability.<a href="#appendix-A-2.7" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.8">
+          <strong>Private DNS-SD:</strong> <span>[<a href="#RFC8882" class="cite xref">RFC8882</a>]</span> sets out privacy requirements for service discovery. <span>[<a href="#I-D.huitema-dnssd-tls-privacy" class="cite xref">I-D.huitema-dnssd-tls-privacy</a>]</span> met them by multicasting a ClientHello whose Encrypted SNI is keyed to a per-service Discovery Key, so only a peer already holding that key can learn the service is present. The draft expired and left key provisioning out of scope, which is the gap an OOB Ceremony fills. A DTLS handshake carried in DNS-SD TXT record updates has since been implemented <span>[<a href="#PionDTLSmDNS" class="cite xref">PionDTLSmDNS</a>]</span> (disclosure: one editor maintains that project).<a href="#appendix-A-2.8" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.9">
+          <strong>Security Parameters in Discovery Records:</strong> <span>[<a href="#I-D.liu-add-dnssd-edns" class="cite xref">I-D.liu-add-dnssd-edns</a>]</span> advertises a certificate fingerprint or Authentication Domain Name in TXT keys or SVCB parameters <span>[<a href="#RFC9460" class="cite xref">RFC9460</a>]</span>, and tells clients not to trust a discovered service automatically.<a href="#appendix-A-2.9" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.10">
+          <strong>DANE and SSHFP:</strong> <span>[<a href="#RFC6698" class="cite xref">RFC6698</a>]</span> and <span>[<a href="#RFC4255" class="cite xref">RFC4255</a>]</span> publish a certificate or key fingerprint in DNS instead of relying on a CA. Both need DNSSEC to protect that record, and a local namespace has no signed parent, so SSHFP in practice falls back to TOFU.<a href="#appendix-A-2.10" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.11">
+          <strong>Opportunistic Security:</strong> <span>[<a href="#RFC7435" class="cite xref">RFC7435</a>]</span> treats unauthenticated encryption and stored TOFU state as better than nothing where authentication is impossible. On a local network the User is usually present, so an OOB Ceremony is available and REQ-VERIFY-01 asks for it.<a href="#appendix-A-2.11" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.12">
+          <strong>EAP-NOOB:</strong> <span>[<a href="#RFC9140" class="cite xref">RFC9140</a>]</span> bootstraps a device with no credentials using a user-assisted OOB message generated per ceremony, and rejects static printed codes because they can leak and be reused.<a href="#appendix-A-2.12" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.13">
+          <strong>WebTransport Certificate Hashes:</strong> Browsers accept a self-signed certificate from a local server when its SHA-256 hash is supplied out of band, limited to ECDSA keys and 14 days validity <span>[<a href="#W3C.WebTransport" class="cite xref">W3C.WebTransport</a>]</span>. This is the extent of CA-free local TLS in a browser today.<a href="#appendix-A-2.13" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-2.14">
+          <strong>Local Referees and ACME:</strong> Architectures utilizing a central local hub to authenticate servers <span>[<a href="#I-D.wing-settle-referee" class="cite xref">I-D.wing-settle-referee</a>]</span> or issue certificates via a local ACME server <span>[<a href="#I-D.sweet-iot-acme" class="cite xref">I-D.sweet-iot-acme</a>]</span> optimize UX but require initial bootstrapping of the Referee itself.<a href="#appendix-A-2.14" class="pilcrow">¶</a>
+</li>
+      </ul>
+</section>
+<section id="appendix-B">
+      <h2 id="name-change-history">
+<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-change-history" class="section-name selfRef">Change History</a>
+      </h2>
+<p id="appendix-B-1">[ RFC Editor: This section to be deleted before RFC publication ]<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+<p id="appendix-B-2">September 29, 2026 - draft-ietf-settle-requirements-00<a href="#appendix-B-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-B-3.1">Initial revision.<a href="#appendix-B-3.1" class="pilcrow">¶</a>
+</li>
+      </ul>
+</section>
+<div id="authors-addresses">
+<section id="appendix-C">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Michael Sweet (<span class="role">editor</span>)</span></div>
+<div dir="auto" class="left"><span class="org">Lakeside Robotics Corporation</span></div>
+<div dir="auto" class="left"><span class="country-name">Canada</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:msweet@lakesiderobotics.ca" class="email">msweet@lakesiderobotics.ca</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Michiel De Backker (<span class="role">editor</span>)</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:mail@backkem.me" class="email">mail@backkem.me</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
